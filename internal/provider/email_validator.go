@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"fmt"
 	"github.com/hashicorp/terraform-plugin-framework-validators/helpers/validatordiag"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"net/mail"
@@ -13,7 +12,7 @@ var _ validator.String = emailValidator{}
 type emailValidator struct{}
 
 func (v emailValidator) Description(_ context.Context) string {
-	return fmt.Sprintf("value must be a valid email address")
+	return "value must be a valid email address"
 }
 
 func (v emailValidator) MarkdownDescription(ctx context.Context) string {
@@ -29,7 +28,7 @@ func (v emailValidator) ValidateString(ctx context.Context, request validator.St
 		response.Diagnostics.Append(validatordiag.InvalidAttributeValueDiagnostic(
 			request.Path,
 			v.Description(ctx),
-			fmt.Sprintf("%s", request.ConfigValue.ValueString()),
+			request.ConfigValue.ValueString(),
 		))
 	}
 }
