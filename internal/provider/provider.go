@@ -45,8 +45,7 @@ func (p *OryNetworkProvider) Schema(ctx context.Context, req provider.SchemaRequ
 			"email": schema.StringAttribute{
 				MarkdownDescription: "Email address used to login to Ory Network",
 				Description:         "Email address used to login to Ory Network",
-				Required:            true,
-				//Optional: true,
+				Optional:            true,
 				Validators: []validator.String{
 					EmailValidator(),
 				},
@@ -54,9 +53,8 @@ func (p *OryNetworkProvider) Schema(ctx context.Context, req provider.SchemaRequ
 			"password": schema.StringAttribute{
 				MarkdownDescription: "Password used to login to Ory Network",
 				Description:         "Password used to login to Ory Network",
-				Required:            true,
-				//Optional:  true,
-				Sensitive: true,
+				Optional:            true,
+				Sensitive:           true,
 			},
 		},
 	}
