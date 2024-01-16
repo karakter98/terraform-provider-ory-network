@@ -11,8 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	ory "github.com/ory/client-go"
 )
 
@@ -65,6 +66,9 @@ func (r *ProjectResourceProps) Schema(ctx context.Context, req resource.SchemaRe
 			"id": schema.StringAttribute{
 				MarkdownDescription: "Project identifier",
 				Computed:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"name": schema.StringAttribute{
 				MarkdownDescription: "Project name",
@@ -73,6 +77,9 @@ func (r *ProjectResourceProps) Schema(ctx context.Context, req resource.SchemaRe
 			"slug": schema.StringAttribute{
 				MarkdownDescription: "Project slug",
 				Computed:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"cors_admin":  corsAttributeSchema,
 			"cors_public": corsAttributeSchema,
@@ -130,14 +137,7 @@ func (r *ProjectResourceProps) Create(ctx context.Context, req resource.CreateRe
 
 	// If applicable, this is a great opportunity to initialize any necessary
 	// provider client data and make a call using it.
-	createProjectBody := ory.NewCreateProjectBody(data.Name.ValueString())
-	if data.WorkspaceId.IsNull() {
-		createProjectBody.SetWorkspaceIdNil()
-	} else {
-		createProjectBody.SetWorkspaceId(data.WorkspaceId.ValueString())
-	}
-	project, _, err := r.client.ProjectAPI.CreateProject(ctx).CreateProjectBody(*createProjectBody).Execute()
-
+	project, err := createProject(r.client, &data, &ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create project, got error: %s", err))
 		return
@@ -151,9 +151,14 @@ func (r *ProjectResourceProps) Create(ctx context.Context, req resource.CreateRe
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 
-	err = r.UpdateProjectSettings(ctx, &data)
+	project, err = updateProject(r.client, &data, nil, &ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("Unable to update project settings, got error: %s", err))
+		return
+	}
+	err = data.Deserialize(project, true)
+	if err != nil {
+		resp.Diagnostics.AddError("Deserialization Error", fmt.Sprintf("Unable to deserialize project, got error: %s", err))
 		return
 	}
 
@@ -173,7 +178,7 @@ func (r *ProjectResourceProps) Read(ctx context.Context, req resource.ReadReques
 
 	// If applicable, this is a great opportunity to initialize any necessary
 	// provider client data and make a call using it.
-	project, _, err := r.client.ProjectAPI.GetProject(ctx, data.Id.ValueString()).Execute()
+	project, err := readProject(r.client, &data, &ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read project, got error: %s", err))
 		return
@@ -190,10 +195,12 @@ func (r *ProjectResourceProps) Read(ctx context.Context, req resource.ReadReques
 }
 
 func (r *ProjectResourceProps) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data ProjectModel
+	var planData ProjectModel
+	var stateData ProjectModel
 
 	// Read Terraform plan data into the model
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &planData)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -201,13 +208,20 @@ func (r *ProjectResourceProps) Update(ctx context.Context, req resource.UpdateRe
 
 	// If applicable, this is a great opportunity to initialize any necessary
 	// provider client data and make a call using it.
-	err := r.UpdateProjectSettings(ctx, &data)
+	project, err := updateProject(r.client, &planData, &stateData, &ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("Unable to update project settings, got error: %s", err))
 		return
 	}
+
+	err = planData.Deserialize(project, true)
+	if err != nil {
+		resp.Diagnostics.AddError("Deserialization Error", fmt.Sprintf("Unable to deserialize project, got error: %s", err))
+		return
+	}
+
 	// Save updated data into Terraform state
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &planData)...)
 }
 
 func (r *ProjectResourceProps) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -223,7 +237,7 @@ func (r *ProjectResourceProps) Delete(ctx context.Context, req resource.DeleteRe
 	// If applicable, this is a great opportunity to initialize any necessary
 	// provider client data and make a call using it.
 	// httpResp, err := r.client.Do(httpReq)
-	_, err := r.client.ProjectAPI.PurgeProject(ctx, data.Id.ValueString()).Execute()
+	err := deleteProject(r.client, &data, &ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete project, got error: %s", err))
 		return
@@ -232,36 +246,4 @@ func (r *ProjectResourceProps) Delete(ctx context.Context, req resource.DeleteRe
 
 func (r *ProjectResourceProps) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
-}
-
-func (r *ProjectResourceProps) UpdateProjectSettings(ctx context.Context, data *ProjectModel) error {
-	services, err := data.SerializeServices()
-	if err != nil {
-		return err
-	}
-
-	adminCors := ProjectModelCorsType{}
-	data.CorsAdmin.As(ctx, &adminCors, basetypes.ObjectAsOptions{})
-	publicCors := ProjectModelCorsType{}
-	data.CorsPublic.As(ctx, &publicCors, basetypes.ObjectAsOptions{})
-
-	setProjectBody := ory.NewSetProject(
-		*data.SerializeCorsSettings(&adminCors),
-		*data.SerializeCorsSettings(&publicCors),
-		data.Name.ValueString(),
-		*services,
-	)
-	setProjectResponse, _, err := r.client.ProjectAPI.SetProject(ctx, data.Id.ValueString()).SetProject(*setProjectBody).Execute()
-
-	if err != nil {
-		return err
-	}
-
-	project := setProjectResponse.Project
-
-	err = data.Deserialize(&project, true)
-	if err != nil {
-		return err
-	}
-	return nil
 }

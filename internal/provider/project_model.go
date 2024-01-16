@@ -166,82 +166,18 @@ func (data *ProjectModel) DeserializeServicesConfig(project *ory.Project, overwr
 	return nil
 }
 
-func (data *ProjectModel) SerializeServices() (*ory.ProjectServices, error) {
-	projectServices := ory.NewProjectServices()
-
-	identityAttr := data.Services.Attributes()["identity"]
-	if identityAttr != nil {
-		identityConfigAttr := identityAttr.(basetypes.ObjectValue).Attributes()["config"]
-		if identityConfigAttr != nil {
-			identityConfigRaw := identityConfigAttr.(jsontypes.Normalized)
-			identityConfig := make(map[string]interface{})
-			err := json.Unmarshal([]byte(identityConfigRaw.StringValue.ValueString()), &identityConfig)
+func (data *ProjectModel) GetServicesFieldConfig(fieldName string) (map[string]interface{}, error) {
+	serviceAttr := data.Services.Attributes()[fieldName]
+	if serviceAttr != nil {
+		configAttr := serviceAttr.(basetypes.ObjectValue).Attributes()["config"]
+		if configAttr != nil {
+			config := make(map[string]interface{})
+			err := json.Unmarshal([]byte(configAttr.(jsontypes.Normalized).ValueString()), &config)
 			if err != nil {
-				return projectServices, err
+				return nil, err
 			}
-			projectServices.SetIdentity(ory.ProjectServiceIdentity{
-				Config: identityConfig,
-			})
+			return config, nil
 		}
 	}
-	if !projectServices.HasIdentity() {
-		projectServices.SetIdentity(ory.ProjectServiceIdentity{
-			Config: make(map[string]interface{}),
-		})
-	}
-
-	oauth2Attr := data.Services.Attributes()["oauth2"]
-	if oauth2Attr != nil {
-		oauth2ConfigAttr := oauth2Attr.(basetypes.ObjectValue).Attributes()["config"]
-		if oauth2ConfigAttr != nil {
-			oauth2ConfigRaw := oauth2ConfigAttr.(jsontypes.Normalized)
-			oauth2Config := make(map[string]interface{})
-			err := json.Unmarshal([]byte(oauth2ConfigRaw.StringValue.ValueString()), &oauth2Config)
-			if err != nil {
-				return projectServices, err
-			}
-			projectServices.SetOauth2(ory.ProjectServiceOAuth2{
-				Config: oauth2Config,
-			})
-		}
-	}
-	if !projectServices.HasOauth2() {
-		projectServices.SetOauth2(ory.ProjectServiceOAuth2{
-			Config: make(map[string]interface{}),
-		})
-	}
-
-	permissionAttr := data.Services.Attributes()["permission"]
-	if permissionAttr != nil {
-		permissionConfigAttr := permissionAttr.(basetypes.ObjectValue).Attributes()["config"]
-		if permissionConfigAttr != nil {
-			permissionConfigRaw := permissionConfigAttr.(jsontypes.Normalized)
-			permissionConfig := make(map[string]interface{})
-			err := json.Unmarshal([]byte(permissionConfigRaw.StringValue.ValueString()), &permissionConfig)
-			if err != nil {
-				return projectServices, err
-			}
-			projectServices.SetPermission(ory.ProjectServicePermission{
-				Config: permissionConfig,
-			})
-		}
-	}
-	if !projectServices.HasPermission() {
-		projectServices.SetPermission(ory.ProjectServicePermission{
-			Config: make(map[string]interface{}),
-		})
-	}
-
-	return projectServices, nil
-}
-
-func (data *ProjectModel) SerializeCorsSettings(cors *ProjectModelCorsType) *ory.ProjectCors {
-	var corsOrigins []string
-	for _, origin := range cors.Origins {
-		corsOrigins = append(corsOrigins, origin.ValueString())
-	}
-	return &ory.ProjectCors{
-		Enabled: cors.Enabled.ValueBoolPointer(),
-		Origins: corsOrigins,
-	}
+	return nil, nil
 }

@@ -6,6 +6,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -15,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	ory "github.com/ory/client-go"
 	"os"
+	"time"
 )
 
 // Ensure OryNetworkProvider satisfies various provider interfaces.
@@ -137,12 +139,18 @@ func (p *OryNetworkProvider) Configure(ctx context.Context, req provider.Configu
 		return
 	}
 
+	retryClient := retryablehttp.NewClient()
+	retryClient.RetryMax = 5
+	retryClient.RetryWaitMin = time.Second * 10
+	retryClient.RetryWaitMax = time.Minute
+
 	// Create a new Ory Network client using the configuration values
 	configuration := ory.NewConfiguration()
 	configuration.Servers = ory.ServerConfigurations{{URL: authEndpoint}}
+	configuration.HTTPClient = retryClient.StandardClient()
 	client := ory.NewAPIClient(configuration)
 
-	sessionToken, err := signin(client, &email, &password, &ctx)
+	sessionToken, err := getSessionToken(client, &email, &password, &ctx)
 
 	if err != nil {
 		resp.Diagnostics.AddError(

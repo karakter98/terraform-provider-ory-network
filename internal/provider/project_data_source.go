@@ -125,7 +125,7 @@ func (d *ProjectDataSourceProps) Read(ctx context.Context, req datasource.ReadRe
 
 	// If applicable, this is a great opportunity to initialize any necessary
 	// provider client data and make a call using it.
-	project, _, err := d.client.ProjectAPI.GetProject(ctx, data.Id.ValueString()).Execute()
+	project, err := readProject(d.client, &data, &ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read project, got error: %s", err))
 		return
