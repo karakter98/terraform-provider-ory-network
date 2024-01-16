@@ -165,7 +165,7 @@ func (p *OryNetworkProvider) Configure(ctx context.Context, req provider.Configu
 
 func (p *OryNetworkProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
-		NewExampleResource,
+		ProjectResource,
 	}
 }
 

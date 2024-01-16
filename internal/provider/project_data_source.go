@@ -5,7 +5,6 @@ package provider
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -18,52 +17,24 @@ import (
 
 // Ensure provider defined types fully satisfy framework interfaces.
 var (
-	_ datasource.DataSource              = &ProjectProps{}
-	_ datasource.DataSourceWithConfigure = &ProjectProps{}
+	_ datasource.DataSource              = &ProjectDataSourceProps{}
+	_ datasource.DataSourceWithConfigure = &ProjectDataSourceProps{}
 )
 
 func ProjectDataSource() datasource.DataSource {
-	return &ProjectProps{}
+	return &ProjectDataSourceProps{}
 }
 
-// ProjectProps defines the data source implementation.
-type ProjectProps struct {
+// ProjectDataSourceProps defines the data source implementation.
+type ProjectDataSourceProps struct {
 	client *ory.APIClient
 }
 
-type ProjectDataSourceModelCorsType struct {
-	Enabled types.Bool     `tfsdk:"enabled"`
-	Origins []types.String `tfsdk:"origins"`
-}
-
-type ProjectDataSourceModelJsonConfigType struct {
-	Config jsontypes.Normalized `tfsdk:"config"`
-}
-
-type ProjectDataSourceModelServicesType struct {
-	Identity   *ProjectDataSourceModelJsonConfigType `tfsdk:"identity"`
-	Oauth2     *ProjectDataSourceModelJsonConfigType `tfsdk:"oauth2"`
-	Permission *ProjectDataSourceModelJsonConfigType `tfsdk:"permission"`
-}
-
-// ProjectDataSourceModel describes the data source data model.
-type ProjectDataSourceModel struct {
-	Id          types.String                        `tfsdk:"id"`
-	Name        types.String                        `tfsdk:"name"`
-	Slug        types.String                        `tfsdk:"slug"`
-	CorsAdmin   *ProjectDataSourceModelCorsType     `tfsdk:"cors_admin"`
-	CorsPublic  *ProjectDataSourceModelCorsType     `tfsdk:"cors_public"`
-	RevisionId  types.String                        `tfsdk:"revision_id"`
-	State       types.String                        `tfsdk:"state"`
-	WorkspaceId types.String                        `tfsdk:"workspace_id"`
-	Services    *ProjectDataSourceModelServicesType `tfsdk:"services"`
-}
-
-func (d *ProjectProps) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *ProjectDataSourceProps) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_project"
 }
 
-func (d *ProjectProps) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *ProjectDataSourceProps) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	corsAttributeSchema := schema.SingleNestedAttribute{
 		Attributes: map[string]schema.Attribute{
 			"enabled": schema.BoolAttribute{
@@ -122,7 +93,7 @@ func (d *ProjectProps) Schema(ctx context.Context, req datasource.SchemaRequest,
 	}
 }
 
-func (d *ProjectProps) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *ProjectDataSourceProps) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
@@ -142,8 +113,8 @@ func (d *ProjectProps) Configure(ctx context.Context, req datasource.ConfigureRe
 	d.client = client
 }
 
-func (d *ProjectProps) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data ProjectDataSourceModel
+func (d *ProjectDataSourceProps) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data ProjectModel
 
 	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -160,55 +131,10 @@ func (d *ProjectProps) Read(ctx context.Context, req datasource.ReadRequest, res
 		return
 	}
 
-	data.Name = types.StringValue(project.Name)
-	data.Slug = types.StringValue(project.Slug)
-	data.RevisionId = types.StringValue(project.RevisionId)
-	data.State = types.StringValue(project.State)
-	if project.WorkspaceId.Get() != nil {
-		data.WorkspaceId = types.StringValue(*project.WorkspaceId.Get())
-	}
-
-	origins := make([]types.String, 0)
-	for _, origin := range project.CorsAdmin.Origins {
-		origins = append(origins, types.StringValue(origin))
-	}
-	data.CorsAdmin = &ProjectDataSourceModelCorsType{
-		Enabled: types.BoolValue(*project.CorsAdmin.Enabled),
-		Origins: origins,
-	}
-
-	origins = make([]types.String, 0)
-	for _, origin := range project.CorsPublic.Origins {
-		origins = append(origins, types.StringValue(origin))
-	}
-	data.CorsPublic = &ProjectDataSourceModelCorsType{
-		Enabled: types.BoolValue(*project.CorsPublic.Enabled),
-		Origins: origins,
-	}
-
-	identityConfig, err := json.Marshal(project.Services.Identity.Config)
+	err = data.Deserialize(project, true)
 	if err != nil {
-		resp.Diagnostics.AddError("JSON Error", fmt.Sprintf("Unable to serialize config, got error: %s", err))
-	}
-	oauth2Config, err := json.Marshal(project.Services.Oauth2.Config)
-	if err != nil {
-		resp.Diagnostics.AddError("JSON Error", fmt.Sprintf("Unable to serialize config, got error: %s", err))
-	}
-	permissionConfig, err := json.Marshal(project.Services.Permission.Config)
-	if err != nil {
-		resp.Diagnostics.AddError("JSON Error", fmt.Sprintf("Unable to serialize config, got error: %s", err))
-	}
-
-	data.Services = &ProjectDataSourceModelServicesType{
-		Identity: &ProjectDataSourceModelJsonConfigType{
-			Config: jsontypes.NewNormalizedValue(string(identityConfig)),
-		},
-		Oauth2: &ProjectDataSourceModelJsonConfigType{
-			Config: jsontypes.NewNormalizedValue(string(oauth2Config)),
-		},
-		Permission: &ProjectDataSourceModelJsonConfigType{
-			Config: jsontypes.NewNormalizedValue(string(permissionConfig)),
-		},
+		resp.Diagnostics.AddError("Deserialization Error", fmt.Sprintf("Unable to deserialize project, got error: %s", err))
+		return
 	}
 
 	// Write logs using the tflog package
