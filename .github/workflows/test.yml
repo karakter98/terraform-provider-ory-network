@@ -50,6 +50,7 @@ jobs:
 
   # Run acceptance tests in a matrix with Terraform CLI versions
   test:
+    if: github.actor!= 'dependabot[bot]'
     name: Terraform Provider Acceptance Tests
     needs: build
     runs-on: ubuntu-latest
