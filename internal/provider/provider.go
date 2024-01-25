@@ -16,6 +16,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	ory "github.com/ory/client-go"
 	"os"
+	"terraform-provider-ory-network/internal/api"
+	"terraform-provider-ory-network/internal/framework/validators"
 	"time"
 )
 
@@ -27,7 +29,8 @@ type OryNetworkProvider struct {
 	// version is set to the provider version on release, "dev" when the
 	// provider is built and ran locally, and "test" when running acceptance
 	// testing.
-	version string
+	version      string
+	sessionToken *string
 }
 
 // OryNetworkProviderModel describes the provider data model.
@@ -48,7 +51,7 @@ func (p *OryNetworkProvider) Schema(ctx context.Context, req provider.SchemaRequ
 				Description: "Email address used to login to Ory Network",
 				Optional:    true,
 				Validators: []validator.String{
-					EmailValidator(),
+					validators.EmailValidator(),
 				},
 			},
 			"password": schema.StringAttribute{
@@ -148,19 +151,22 @@ func (p *OryNetworkProvider) Configure(ctx context.Context, req provider.Configu
 	configuration.HTTPClient = retryClient.StandardClient()
 	client := ory.NewAPIClient(configuration)
 
-	sessionToken, err := getSessionToken(client, &email, &password, &ctx)
+	if p.sessionToken == nil {
+		sessionToken, err := api.EmailPasswordAuth(client, &email, &password, &ctx)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable to Create Ory Network API Client",
+				"An unexpected error occurred when creating the Ory Network API client. "+
+					"If the error is not clear, please contact the provider developers.\n\n"+
+					"Ory Network Client Error: "+err.Error(),
+			)
+			return
+		}
 
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to Create Ory Network API Client",
-			"An unexpected error occurred when creating the Ory Network API client. "+
-				"If the error is not clear, please contact the provider developers.\n\n"+
-				"Ory Network Client Error: "+err.Error(),
-		)
-		return
+		p.sessionToken = sessionToken
 	}
 
-	client.GetConfig().AddDefaultHeader("Authorization", fmt.Sprintf("Bearer %s", *sessionToken))
+	client.GetConfig().AddDefaultHeader("Authorization", fmt.Sprintf("Bearer %s", *p.sessionToken))
 	client.GetConfig().Servers = ory.ServerConfigurations{{URL: apiEndpoint}}
 
 	// Make the Ory Network client available during DataSource and Resource

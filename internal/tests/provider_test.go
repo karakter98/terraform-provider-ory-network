@@ -1,10 +1,11 @@
 // Copyright (c) HashiCorp, Inc.
 // SPDX-License-Identifier: MPL-2.0
 
-package provider
+package tests
 
 import (
 	"os"
+	"terraform-provider-ory-network/internal/provider"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -16,7 +17,7 @@ import (
 // CLI command executed to create a provider server to which the CLI can
 // reattach.
 var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-	"orynetwork": providerserver.NewProtocol6WithError(New("test")()),
+	"orynetwork": providerserver.NewProtocol6WithError(provider.New("test")()),
 }
 
 func testAccPreCheck(t *testing.T) {

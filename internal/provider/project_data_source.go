@@ -11,7 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	ory "github.com/ory/client-go"
-	"terraform-provider-ory-network/internal/provider/models"
+	"terraform-provider-ory-network/internal/api"
+	projectmodel "terraform-provider-ory-network/internal/models/project"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -125,10 +126,10 @@ func (d *ProjectDataSourceProps) Configure(ctx context.Context, req datasource.C
 }
 
 func (d *ProjectDataSourceProps) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data models.ProjectModel
+	var data *projectmodel.ProjectType
 
 	// Read Terraform configuration data into the model
-	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -136,18 +137,18 @@ func (d *ProjectDataSourceProps) Read(ctx context.Context, req datasource.ReadRe
 
 	// If applicable, this is a great opportunity to initialize any necessary
 	// provider client data and make a call using it.
-	project, err := readProject(d.client, &data, &ctx)
+	project, err := api.ReadProject(d.client, data, &ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read project, got error: %s", err))
 		return
 	}
 
-	data.Deserialize(&ctx, project)
+	data = projectmodel.NewProjectFromApiRepresentation(project, &ctx)
 
 	// Write logs using the tflog package
 	// Documentation: https://terraform.io/plugin/log
 	tflog.Trace(ctx, "read project")
 
 	// Save data into Terraform state
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, data)...)
 }

@@ -13,7 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	ory "github.com/ory/client-go"
-	"terraform-provider-ory-network/internal/provider/models"
+	"terraform-provider-ory-network/internal/api"
+	projectmodel "terraform-provider-ory-network/internal/models/project"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -141,8 +142,8 @@ func (r *ProjectResourceProps) Configure(ctx context.Context, req resource.Confi
 }
 
 func (r *ProjectResourceProps) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var createData models.ProjectModel
-	var updateData models.ProjectModel
+	var createData projectmodel.ProjectType
+	var updateData projectmodel.ProjectType
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &createData)...)
@@ -154,30 +155,30 @@ func (r *ProjectResourceProps) Create(ctx context.Context, req resource.CreateRe
 
 	// If applicable, this is a great opportunity to initialize any necessary
 	// provider client data and make a call using it.
-	project, err := createProject(r.client, &createData, &ctx)
+	project, err := api.CreateProject(r.client, &createData, &ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create project, got error: %s", err))
 		return
 	}
 
-	createData.Deserialize(&ctx, project)
+	createData = *projectmodel.NewProjectFromApiRepresentation(project, &ctx)
 	// Save intermediate data into Terraform state
-	resp.Diagnostics.Append(resp.State.Set(ctx, &createData)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, createData)...)
 
 	updateData.Id = createData.Id
-	project, err = updateProject(r.client, &updateData, &createData, &ctx)
+	project, err = api.UpdateProject(r.client, &updateData, &createData, &ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("Unable to update project settings, got error: %s", err))
 		return
 	}
-	updateData.Deserialize(&ctx, project)
+	updateData = *projectmodel.NewProjectFromApiRepresentation(project, &ctx)
 
 	// Save final data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &updateData)...)
 }
 
 func (r *ProjectResourceProps) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data models.ProjectModel
+	var data projectmodel.ProjectType
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -188,21 +189,21 @@ func (r *ProjectResourceProps) Read(ctx context.Context, req resource.ReadReques
 
 	// If applicable, this is a great opportunity to initialize any necessary
 	// provider client data and make a call using it.
-	project, err := readProject(r.client, &data, &ctx)
+	project, err := api.ReadProject(r.client, &data, &ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read project, got error: %s", err))
 		return
 	}
 
-	data.Deserialize(&ctx, project)
+	data = *projectmodel.NewProjectFromApiRepresentation(project, &ctx)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *ProjectResourceProps) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var planData models.ProjectModel
-	var stateData models.ProjectModel
+	var planData projectmodel.ProjectType
+	var stateData projectmodel.ProjectType
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &planData)...)
@@ -214,20 +215,20 @@ func (r *ProjectResourceProps) Update(ctx context.Context, req resource.UpdateRe
 
 	// If applicable, this is a great opportunity to initialize any necessary
 	// provider client data and make a call using it.
-	project, err := updateProject(r.client, &planData, &stateData, &ctx)
+	project, err := api.UpdateProject(r.client, &planData, &stateData, &ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("Unable to update project settings, got error: %s", err))
 		return
 	}
 
-	planData.Deserialize(&ctx, project)
+	planData = *projectmodel.NewProjectFromApiRepresentation(project, &ctx)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &planData)...)
 }
 
 func (r *ProjectResourceProps) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data models.ProjectModel
+	var data projectmodel.ProjectType
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -239,7 +240,7 @@ func (r *ProjectResourceProps) Delete(ctx context.Context, req resource.DeleteRe
 	// If applicable, this is a great opportunity to initialize any necessary
 	// provider client data and make a call using it.
 	// httpResp, err := r.client.Do(httpReq)
-	err := deleteProject(r.client, &data, &ctx)
+	err := api.DeleteProject(r.client, &data, &ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete project, got error: %s", err))
 		return
