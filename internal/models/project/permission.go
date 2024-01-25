@@ -47,6 +47,14 @@ func (config *PermissionConfigType) ToApiRepresentation() (map[string]interface{
 func NewProjectPermissionFromApiRepresentation(apiPermission *ory.ProjectServicePermission) *PermissionType {
 	rawPermissionConfig := apiPermission.Config
 
+	if rawPermissionConfig["namespaces"] == nil {
+		return &PermissionType{
+			Config: PermissionConfigType{
+				Namespaces: make([]PermissionNamespaceType, 0),
+			},
+		}
+	}
+
 	namespaces := make([]PermissionNamespaceType, 0)
 	for _, rawNamespace := range rawPermissionConfig["namespaces"].([]interface{}) {
 		namespace := rawNamespace.(map[string]interface{})

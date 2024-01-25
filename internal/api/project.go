@@ -35,46 +35,33 @@ func CreateProject(c *ory.APIClient, data *projectmodel.ProjectType, ctx *contex
 	return project, nil
 }
 
-func UpdateProject(c *ory.APIClient, newData *projectmodel.ProjectType, oldData *projectmodel.ProjectType, ctx *context.Context) (*ory.Project, error) {
-	if newData.Name.IsUnknown() || newData.Name.IsNull() {
+func UpdateProject(c *ory.APIClient, data *projectmodel.ProjectType, ctx *context.Context) (*ory.Project, error) {
+	if data.Name.IsUnknown() || data.Name.IsNull() {
 		return nil, errors.New("project name must be set and a known value")
 	}
-	if newData.Id.IsUnknown() || newData.Id.IsNull() {
+	if data.Id.IsUnknown() || data.Id.IsNull() {
 		return nil, errors.New("project ID must be set and a known value")
 	}
 
 	adminCors := ory.ProjectCors{}
-	newAdminCorsModel := projectmodel.NewProjectCorsFromTerraformRepresentation(&newData.CorsAdmin, ctx)
-	oldAdminCorsModel := projectmodel.NewProjectCorsFromTerraformRepresentation(&oldData.CorsAdmin, ctx)
+	newAdminCorsModel := projectmodel.NewProjectCorsFromTerraformRepresentation(&data.CorsAdmin, ctx)
 
 	if newAdminCorsModel != nil {
 		adminCors = *newAdminCorsModel.ToApiRepresentation()
-	} else if oldAdminCorsModel != nil {
-		adminCors = *oldAdminCorsModel.ToApiRepresentation()
 	}
 
 	publicCors := ory.ProjectCors{}
-	newPublicCorsModel := projectmodel.NewProjectCorsFromTerraformRepresentation(&newData.CorsPublic, ctx)
-	oldPublicCorsModel := projectmodel.NewProjectCorsFromTerraformRepresentation(&oldData.CorsPublic, ctx)
+	newPublicCorsModel := projectmodel.NewProjectCorsFromTerraformRepresentation(&data.CorsPublic, ctx)
 
 	if newPublicCorsModel != nil {
 		publicCors = *newPublicCorsModel.ToApiRepresentation()
-	} else if oldPublicCorsModel != nil {
-		publicCors = *oldPublicCorsModel.ToApiRepresentation()
 	}
 
 	services := ory.ProjectServices{}
-	newServices := projectmodel.NewProjectServicesFromTerraformRepresentation(&newData.Services, ctx)
-	oldServices := projectmodel.NewProjectServicesFromTerraformRepresentation(&oldData.Services, ctx)
+	newServices := projectmodel.NewProjectServicesFromTerraformRepresentation(&data.Services, ctx)
 
 	if newServices != nil && newServices.Permission != nil {
 		permission, err := newServices.Permission.ToApiRepresentation()
-		if err != nil {
-			return nil, err
-		}
-		services.SetPermission(*permission)
-	} else if oldServices != nil && oldServices.Permission != nil {
-		permission, err := oldServices.Permission.ToApiRepresentation()
 		if err != nil {
 			return nil, err
 		}
@@ -84,10 +71,10 @@ func UpdateProject(c *ory.APIClient, newData *projectmodel.ProjectType, oldData 
 	setProjectBody := ory.NewSetProject(
 		adminCors,
 		publicCors,
-		newData.Name.ValueString(),
+		data.Name.ValueString(),
 		services,
 	)
-	setProjectResponse, response, err := c.ProjectAPI.SetProject(*ctx, newData.Id.ValueString()).SetProject(*setProjectBody).Execute()
+	setProjectResponse, response, err := c.ProjectAPI.SetProject(*ctx, data.Id.ValueString()).SetProject(*setProjectBody).Execute()
 
 	if err != nil {
 		buf := new(bytes.Buffer)

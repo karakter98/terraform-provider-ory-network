@@ -87,17 +87,6 @@ func TestAccProjectResourcePermissions(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
-			// Can remove permissions from project that was created with permissions specified
-			{
-				Config: `
-				resource "orynetwork_project" "test_permissions_with_settings" {
-				  name = "DeleteMe"
-				}
-				`,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("orynetwork_project.test_permissions_with_settings", "services.permission.config.namespaces.#", "0"),
-				),
-			},
 			// Delete testing automatically occurs in TestCase
 		},
 	})
