@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	ory "github.com/ory/client-go"
+	"terraform-provider-ory-network/internal/provider/models"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -124,7 +125,7 @@ func (d *ProjectDataSourceProps) Configure(ctx context.Context, req datasource.C
 }
 
 func (d *ProjectDataSourceProps) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data ProjectModel
+	var data models.ProjectModel
 
 	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)

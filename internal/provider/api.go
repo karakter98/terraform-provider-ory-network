@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	ory "github.com/ory/client-go"
+	"terraform-provider-ory-network/internal/provider/models"
 )
 
 func getSessionToken(c *ory.APIClient, email *string, password *string, ctx *context.Context) (*string, error) {
@@ -48,7 +49,7 @@ func getSessionToken(c *ory.APIClient, email *string, password *string, ctx *con
 	return &sessionToken, nil
 }
 
-func createProject(c *ory.APIClient, data *ProjectModel, ctx *context.Context) (*ory.Project, error) {
+func createProject(c *ory.APIClient, data *models.ProjectModel, ctx *context.Context) (*ory.Project, error) {
 	if data.Name.IsUnknown() || data.Name.IsNull() {
 		return nil, errors.New("project name must be set and a known value")
 	}
@@ -75,7 +76,7 @@ func createProject(c *ory.APIClient, data *ProjectModel, ctx *context.Context) (
 	return project, nil
 }
 
-func updateProject(c *ory.APIClient, newData *ProjectModel, oldData *ProjectModel, ctx *context.Context) (*ory.Project, error) {
+func updateProject(c *ory.APIClient, newData *models.ProjectModel, oldData *models.ProjectModel, ctx *context.Context) (*ory.Project, error) {
 	if newData.Name.IsUnknown() || newData.Name.IsNull() {
 		return nil, errors.New("project name must be set and a known value")
 	}
@@ -83,7 +84,7 @@ func updateProject(c *ory.APIClient, newData *ProjectModel, oldData *ProjectMode
 		return nil, errors.New("project ID must be set and a known value")
 	}
 
-	adminCorsModel := ProjectModelCorsType{}
+	adminCorsModel := models.ProjectModelCorsType{}
 	if !newData.CorsAdmin.IsNull() && !newData.CorsAdmin.IsUnknown() {
 		newData.CorsAdmin.As(*ctx, &adminCorsModel, basetypes.ObjectAsOptions{})
 	} else if oldData != nil && !oldData.CorsAdmin.IsNull() && !oldData.CorsAdmin.IsUnknown() {
@@ -98,7 +99,7 @@ func updateProject(c *ory.APIClient, newData *ProjectModel, oldData *ProjectMode
 		Origins: corsAdminOrigins,
 	}
 
-	publicCorsModel := ProjectModelCorsType{}
+	publicCorsModel := models.ProjectModelCorsType{}
 	if !newData.CorsPublic.IsNull() && !newData.CorsPublic.IsUnknown() {
 		newData.CorsPublic.As(*ctx, &publicCorsModel, basetypes.ObjectAsOptions{})
 	} else if oldData != nil && !oldData.CorsPublic.IsNull() && !oldData.CorsPublic.IsUnknown() {
@@ -115,23 +116,19 @@ func updateProject(c *ory.APIClient, newData *ProjectModel, oldData *ProjectMode
 
 	projectServices := ory.NewProjectServices()
 
-	newPermissionConfigMap, err := newData.MarshalPermission(ctx)
+	newPermission, err := newData.MarshalPermission(ctx)
 	if err != nil {
 		return nil, err
 	}
-	oldPermissionConfigMap, err := oldData.MarshalPermission(ctx)
+	oldPermission, err := oldData.MarshalPermission(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if newPermissionConfigMap != nil {
-		projectServices.SetPermission(ory.ProjectServicePermission{
-			Config: newPermissionConfigMap,
-		})
-	} else if oldPermissionConfigMap != nil {
-		projectServices.SetPermission(ory.ProjectServicePermission{
-			Config: oldPermissionConfigMap,
-		})
+	if newPermission != nil {
+		projectServices.SetPermission(*newPermission)
+	} else if oldPermission != nil {
+		projectServices.SetPermission(*oldPermission)
 	}
 
 	setProjectBody := ory.NewSetProject(
@@ -155,7 +152,7 @@ func updateProject(c *ory.APIClient, newData *ProjectModel, oldData *ProjectMode
 	return &project, nil
 }
 
-func readProject(c *ory.APIClient, data *ProjectModel, ctx *context.Context) (*ory.Project, error) {
+func readProject(c *ory.APIClient, data *models.ProjectModel, ctx *context.Context) (*ory.Project, error) {
 	if data.Id.IsUnknown() || data.Id.IsNull() {
 		return nil, errors.New("project ID must be set and a known value")
 	}
@@ -166,7 +163,7 @@ func readProject(c *ory.APIClient, data *ProjectModel, ctx *context.Context) (*o
 	return project, nil
 }
 
-func deleteProject(c *ory.APIClient, data *ProjectModel, ctx *context.Context) error {
+func deleteProject(c *ory.APIClient, data *models.ProjectModel, ctx *context.Context) error {
 	if data.Id.IsUnknown() || data.Id.IsNull() {
 		return errors.New("project ID must be set and a known value")
 	}

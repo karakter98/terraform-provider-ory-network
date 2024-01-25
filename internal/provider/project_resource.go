@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	ory "github.com/ory/client-go"
+	"terraform-provider-ory-network/internal/provider/models"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -140,8 +141,8 @@ func (r *ProjectResourceProps) Configure(ctx context.Context, req resource.Confi
 }
 
 func (r *ProjectResourceProps) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var createData ProjectModel
-	var updateData ProjectModel
+	var createData models.ProjectModel
+	var updateData models.ProjectModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &createData)...)
@@ -176,7 +177,7 @@ func (r *ProjectResourceProps) Create(ctx context.Context, req resource.CreateRe
 }
 
 func (r *ProjectResourceProps) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data ProjectModel
+	var data models.ProjectModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -200,8 +201,8 @@ func (r *ProjectResourceProps) Read(ctx context.Context, req resource.ReadReques
 }
 
 func (r *ProjectResourceProps) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var planData ProjectModel
-	var stateData ProjectModel
+	var planData models.ProjectModel
+	var stateData models.ProjectModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &planData)...)
@@ -226,7 +227,7 @@ func (r *ProjectResourceProps) Update(ctx context.Context, req resource.UpdateRe
 }
 
 func (r *ProjectResourceProps) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data ProjectModel
+	var data models.ProjectModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
