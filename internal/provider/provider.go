@@ -45,18 +45,16 @@ func (p *OryNetworkProvider) Schema(ctx context.Context, req provider.SchemaRequ
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"email": schema.StringAttribute{
-				MarkdownDescription: "Email address used to login to Ory Network",
-				Description:         "Email address used to login to Ory Network",
-				Optional:            true,
+				Description: "Email address used to login to Ory Network",
+				Optional:    true,
 				Validators: []validator.String{
 					EmailValidator(),
 				},
 			},
 			"password": schema.StringAttribute{
-				MarkdownDescription: "Password used to login to Ory Network",
-				Description:         "Password used to login to Ory Network",
-				Optional:            true,
-				Sensitive:           true,
+				Description: "Password used to login to Ory Network",
+				Optional:    true,
+				Sensitive:   true,
 			},
 		},
 	}

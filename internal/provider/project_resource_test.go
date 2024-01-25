@@ -4,7 +4,6 @@
 package provider
 
 import (
-	"encoding/json"
 	"os"
 	"testing"
 
@@ -12,9 +11,6 @@ import (
 )
 
 func TestAccProjectResource(t *testing.T) {
-	permissionJson, _ := json.Marshal(map[string]interface{}{
-		"namespaces": []map[string]interface{}{{"id": 1, "name": "Test"}},
-	})
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -25,9 +21,8 @@ func TestAccProjectResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("orynetwork_project.test_with_settings", "id"),
 					resource.TestCheckResourceAttr("orynetwork_project.test_with_settings", "name", os.Getenv("TF_VAR_TEST_ORY_NETWORK_PROJECT_NAME")),
-					resource.TestCheckResourceAttr("orynetwork_project.test_with_settings", "services.permission.config", string(permissionJson)),
-					resource.TestCheckResourceAttrSet("orynetwork_project.test_with_settings", "services.identity.config"),
-					resource.TestCheckResourceAttrSet("orynetwork_project.test_with_settings", "services.oauth2.config"),
+					resource.TestCheckResourceAttr("orynetwork_project.test_with_settings", "services.permission.config.namespaces.0.id", "1"),
+					resource.TestCheckResourceAttr("orynetwork_project.test_with_settings", "services.permission.config.namespaces.0.name", "Test"),
 					resource.TestCheckResourceAttr("orynetwork_project.test_with_settings", "cors_admin.origins.#", "1"),
 					resource.TestCheckResourceAttr("orynetwork_project.test_with_settings", "cors_admin.origins.0", "https://google.com"),
 				),
@@ -38,7 +33,7 @@ func TestAccProjectResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("orynetwork_project.test_no_settings", "id"),
 					resource.TestCheckResourceAttr("orynetwork_project.test_no_settings", "name", os.Getenv("TF_VAR_TEST_ORY_NETWORK_PROJECT_NAME")),
-					resource.TestCheckResourceAttr("orynetwork_project.test_no_settings", "services.permission.config", `{"namespaces":[]}`),
+					resource.TestCheckResourceAttr("orynetwork_project.test_no_settings", "services.permission.config.namespaces.#", "0"),
 				),
 			},
 			// Import testing
@@ -58,9 +53,8 @@ func TestAccProjectResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("orynetwork_project.test_no_settings", "id"),
 					resource.TestCheckResourceAttr("orynetwork_project.test_no_settings", "name", os.Getenv("TF_VAR_TEST_ORY_NETWORK_PROJECT_NAME")),
-					resource.TestCheckResourceAttr("orynetwork_project.test_no_settings", "services.permission.config", string(permissionJson)),
-					resource.TestCheckResourceAttrSet("orynetwork_project.test_no_settings", "services.identity.config"),
-					resource.TestCheckResourceAttrSet("orynetwork_project.test_no_settings", "services.oauth2.config"),
+					resource.TestCheckResourceAttr("orynetwork_project.test_no_settings", "services.permission.config.namespaces.0.id", "2"),
+					resource.TestCheckResourceAttr("orynetwork_project.test_no_settings", "services.permission.config.namespaces.0.name", "Test2"),
 					resource.TestCheckResourceAttr("orynetwork_project.test_no_settings", "cors_admin.origins.#", "1"),
 					resource.TestCheckResourceAttr("orynetwork_project.test_no_settings", "cors_admin.origins.0", "https://google.com"),
 				),
@@ -78,12 +72,12 @@ resource "orynetwork_project" "test_with_settings" {
   name = var.TEST_ORY_NETWORK_PROJECT_NAME
   services = {
 	permission = {
-	  config = jsonencode({
+	  config = {
 		namespaces = [{
 		  id = 1
 		  name = "Test"
 		}]
-      })
+      }
 	}
   }
   cors_admin = {
@@ -111,12 +105,12 @@ resource "orynetwork_project" "test_no_settings" {
   name = var.TEST_ORY_NETWORK_PROJECT_NAME
   services = {
 	permission = {
-	  config = jsonencode({
+	  config = {
 		namespaces = [{
-		  id = 1
-		  name = "Test"
+		  id = 2
+		  name = "Test2"
 		}]
-      })
+      }
 	}
   }
   cors_admin = {

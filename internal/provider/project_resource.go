@@ -6,8 +6,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -51,32 +49,23 @@ func (r *ProjectResourceProps) Schema(ctx context.Context, req resource.SchemaRe
 		Optional: true,
 		Computed: true,
 	}
-	jsonConfigSchema := schema.ObjectAttribute{
-		AttributeTypes: map[string]attr.Type{
-			"config": jsontypes.NormalizedType{},
-		},
-		Optional: true,
-		Computed: true,
-	}
 
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
 		MarkdownDescription: "Ory Network Project",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				MarkdownDescription: "Project identifier",
-				Computed:            true,
+				Description: "Project identifier (UUID)",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"name": schema.StringAttribute{
-				MarkdownDescription: "Project name",
-				Required:            true,
+				Required: true,
 			},
 			"slug": schema.StringAttribute{
-				MarkdownDescription: "Project slug",
-				Computed:            true,
+				Computed: true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -94,9 +83,34 @@ func (r *ProjectResourceProps) Schema(ctx context.Context, req resource.SchemaRe
 			},
 			"services": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"identity":   jsonConfigSchema,
-					"oauth2":     jsonConfigSchema,
-					"permission": jsonConfigSchema,
+					"permission": schema.SingleNestedAttribute{
+						Attributes: map[string]schema.Attribute{
+							"config": schema.SingleNestedAttribute{
+								Attributes: map[string]schema.Attribute{
+									"namespaces": schema.ListNestedAttribute{
+										NestedObject: schema.NestedAttributeObject{
+											Attributes: map[string]schema.Attribute{
+												"id": schema.Int64Attribute{
+													Optional: true,
+													Computed: true,
+												},
+												"name": schema.StringAttribute{
+													Optional: true,
+													Computed: true,
+												},
+											},
+										},
+										Optional: true,
+										Computed: true,
+									},
+								},
+								Optional: true,
+								Computed: true,
+							},
+						},
+						Optional: true,
+						Computed: true,
+					},
 				},
 				Optional: true,
 				Computed: true,
@@ -126,10 +140,12 @@ func (r *ProjectResourceProps) Configure(ctx context.Context, req resource.Confi
 }
 
 func (r *ProjectResourceProps) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data ProjectModel
+	var createData ProjectModel
+	var updateData ProjectModel
 
 	// Read Terraform plan data into the model
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &createData)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &updateData)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -137,33 +153,26 @@ func (r *ProjectResourceProps) Create(ctx context.Context, req resource.CreateRe
 
 	// If applicable, this is a great opportunity to initialize any necessary
 	// provider client data and make a call using it.
-	project, err := createProject(r.client, &data, &ctx)
+	project, err := createProject(r.client, &createData, &ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create project, got error: %s", err))
 		return
 	}
 
-	err = data.Deserialize(project, false)
-	if err != nil {
-		resp.Diagnostics.AddError("Deserialization Error", fmt.Sprintf("Unable to deserialize project, got error: %s", err))
-		return
-	}
-	// Save data into Terraform state
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	createData.Deserialize(&ctx, project)
+	// Save intermediate data into Terraform state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &createData)...)
 
-	project, err = updateProject(r.client, &data, nil, &ctx)
+	updateData.Id = createData.Id
+	project, err = updateProject(r.client, &updateData, &createData, &ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("Unable to update project settings, got error: %s", err))
 		return
 	}
-	err = data.Deserialize(project, true)
-	if err != nil {
-		resp.Diagnostics.AddError("Deserialization Error", fmt.Sprintf("Unable to deserialize project, got error: %s", err))
-		return
-	}
+	updateData.Deserialize(&ctx, project)
 
-	// Save data into Terraform state
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	// Save final data into Terraform state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &updateData)...)
 }
 
 func (r *ProjectResourceProps) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -184,11 +193,7 @@ func (r *ProjectResourceProps) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
-	err = data.Deserialize(project, true)
-	if err != nil {
-		resp.Diagnostics.AddError("Deserialization Error", fmt.Sprintf("Unable to deserialize project, got error: %s", err))
-		return
-	}
+	data.Deserialize(&ctx, project)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -214,11 +219,7 @@ func (r *ProjectResourceProps) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 
-	err = planData.Deserialize(project, true)
-	if err != nil {
-		resp.Diagnostics.AddError("Deserialization Error", fmt.Sprintf("Unable to deserialize project, got error: %s", err))
-		return
-	}
+	planData.Deserialize(&ctx, project)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &planData)...)

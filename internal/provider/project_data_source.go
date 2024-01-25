@@ -6,8 +6,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -47,28 +45,20 @@ func (d *ProjectDataSourceProps) Schema(ctx context.Context, req datasource.Sche
 		},
 		Computed: true,
 	}
-	jsonConfigSchema := schema.ObjectAttribute{
-		AttributeTypes: map[string]attr.Type{
-			"config": jsontypes.NormalizedType{},
-		},
-		Computed: true,
-	}
 
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
 		MarkdownDescription: "Ory Network Project",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				MarkdownDescription: "Project identifier",
-				Required:            true,
+				Description: "Project identifier (UUID)",
+				Required:    true,
 			},
 			"name": schema.StringAttribute{
-				MarkdownDescription: "Project name",
-				Computed:            true,
+				Computed: true,
 			},
 			"slug": schema.StringAttribute{
-				MarkdownDescription: "Project slug",
-				Computed:            true,
+				Computed: true,
 			},
 			"cors_admin":  corsAttributeSchema,
 			"cors_public": corsAttributeSchema,
@@ -83,9 +73,29 @@ func (d *ProjectDataSourceProps) Schema(ctx context.Context, req datasource.Sche
 			},
 			"services": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"identity":   jsonConfigSchema,
-					"oauth2":     jsonConfigSchema,
-					"permission": jsonConfigSchema,
+					"permission": schema.SingleNestedAttribute{
+						Attributes: map[string]schema.Attribute{
+							"config": schema.SingleNestedAttribute{
+								Attributes: map[string]schema.Attribute{
+									"namespaces": schema.ListNestedAttribute{
+										NestedObject: schema.NestedAttributeObject{
+											Attributes: map[string]schema.Attribute{
+												"id": schema.Int64Attribute{
+													Computed: true,
+												},
+												"name": schema.StringAttribute{
+													Computed: true,
+												},
+											},
+										},
+										Computed: true,
+									},
+								},
+								Computed: true,
+							},
+						},
+						Computed: true,
+					},
 				},
 				Computed: true,
 			},
@@ -131,11 +141,7 @@ func (d *ProjectDataSourceProps) Read(ctx context.Context, req datasource.ReadRe
 		return
 	}
 
-	err = data.Deserialize(project, true)
-	if err != nil {
-		resp.Diagnostics.AddError("Deserialization Error", fmt.Sprintf("Unable to deserialize project, got error: %s", err))
-		return
-	}
+	data.Deserialize(&ctx, project)
 
 	// Write logs using the tflog package
 	// Documentation: https://terraform.io/plugin/log

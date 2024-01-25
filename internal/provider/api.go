@@ -62,10 +62,14 @@ func createProject(c *ory.APIClient, data *ProjectModel, ctx *context.Context) (
 	} else {
 		createProjectBody.SetWorkspaceId(data.WorkspaceId.ValueString())
 	}
-	project, _, err := c.ProjectAPI.CreateProject(*ctx).CreateProjectBody(*createProjectBody).Execute()
+	project, response, err := c.ProjectAPI.CreateProject(*ctx).CreateProjectBody(*createProjectBody).Execute()
 
 	if err != nil {
-		return nil, err
+		buf := new(bytes.Buffer)
+		_, _ = buf.ReadFrom(response.Body)
+		respBody := buf.String()
+
+		return nil, errors.Join(err, errors.New(respBody))
 	}
 
 	return project, nil
@@ -111,33 +115,22 @@ func updateProject(c *ory.APIClient, newData *ProjectModel, oldData *ProjectMode
 
 	projectServices := ory.NewProjectServices()
 
-	identityConfigMap, err := newData.GetServicesFieldConfig("identity")
+	newPermissionConfigMap, err := newData.MarshalPermission(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if identityConfigMap != nil {
-		projectServices.SetIdentity(ory.ProjectServiceIdentity{
-			Config: identityConfigMap,
-		})
+	oldPermissionConfigMap, err := oldData.MarshalPermission(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	oauth2ConfigMap, err := newData.GetServicesFieldConfig("oauth2")
-	if err != nil {
-		return nil, err
-	}
-	if oauth2ConfigMap != nil {
-		projectServices.SetOauth2(ory.ProjectServiceOAuth2{
-			Config: oauth2ConfigMap,
-		})
-	}
-
-	permissionConfigMap, err := newData.GetServicesFieldConfig("permission")
-	if err != nil {
-		return nil, err
-	}
-	if permissionConfigMap != nil {
+	if newPermissionConfigMap != nil {
 		projectServices.SetPermission(ory.ProjectServicePermission{
-			Config: permissionConfigMap,
+			Config: newPermissionConfigMap,
+		})
+	} else if oldPermissionConfigMap != nil {
+		projectServices.SetPermission(ory.ProjectServicePermission{
+			Config: oldPermissionConfigMap,
 		})
 	}
 
@@ -147,10 +140,14 @@ func updateProject(c *ory.APIClient, newData *ProjectModel, oldData *ProjectMode
 		newData.Name.ValueString(),
 		*projectServices,
 	)
-	setProjectResponse, _, err := c.ProjectAPI.SetProject(*ctx, newData.Id.ValueString()).SetProject(*setProjectBody).Execute()
+	setProjectResponse, response, err := c.ProjectAPI.SetProject(*ctx, newData.Id.ValueString()).SetProject(*setProjectBody).Execute()
 
 	if err != nil {
-		return nil, err
+		buf := new(bytes.Buffer)
+		_, _ = buf.ReadFrom(response.Body)
+		respBody := buf.String()
+
+		return nil, errors.Join(err, errors.New(respBody))
 	}
 
 	project := setProjectResponse.Project
