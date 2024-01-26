@@ -10,13 +10,15 @@ import (
 
 type ServicesType struct {
 	Permission *PermissionType `tfsdk:"permission"`
+	Identity   *IdentityType   `tfsdk:"identity"`
 }
 
 func NewProjectServicesFromApiRepresentation(apiServices *ory.ProjectServices) *ServicesType {
 	permission := NewProjectPermissionFromApiRepresentation(apiServices.Permission)
-
+	identity := NewProjectIdentityFromApiRepresentation(apiServices.Identity)
 	return &ServicesType{
 		Permission: permission,
+		Identity:   identity,
 	}
 }
 
@@ -26,8 +28,7 @@ func NewProjectServicesFromTerraformRepresentation(objectValue *basetypes.Object
 	}
 
 	services := &ServicesType{}
-	diags := objectValue.As(*ctx, services, basetypes.ObjectAsOptions{})
-	diags.Errors()
+	objectValue.As(*ctx, services, basetypes.ObjectAsOptions{UnhandledUnknownAsEmpty: true})
 	return services
 }
 
@@ -36,6 +37,7 @@ func (services *ServicesType) ToTerraformRepresentation(ctx *context.Context) ba
 		*ctx,
 		map[string]attr.Type{
 			"permission": services.Permission.TerraformType(),
+			"identity":   services.Identity.TerraformType(),
 		},
 		services,
 	)
@@ -50,6 +52,21 @@ func (services *ServicesType) ToApiRepresentation() (*ory.ProjectServices, error
 		return nil, err
 	}
 
+	oryIdentity, err := services.Identity.ToApiRepresentation()
+	if err != nil {
+		return nil, err
+	}
+
 	oryServices.SetPermission(*oryPermission)
+	oryServices.SetIdentity(*oryIdentity)
 	return oryServices, nil
+}
+
+func (services *ServicesType) MergeWith(other *ServicesType) {
+	if services.Permission == nil {
+		services.Permission = other.Permission
+	}
+	if services.Identity == nil {
+		services.Identity = other.Identity
+	}
 }

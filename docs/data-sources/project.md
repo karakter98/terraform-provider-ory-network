@@ -24,10 +24,8 @@ Ory Network Project
 - `cors_admin` (Attributes) (see [below for nested schema](#nestedatt--cors_admin))
 - `cors_public` (Attributes) (see [below for nested schema](#nestedatt--cors_public))
 - `name` (String)
-- `revision_id` (String)
 - `services` (Attributes) (see [below for nested schema](#nestedatt--services))
 - `slug` (String)
-- `state` (String)
 - `workspace_id` (String)
 
 <a id="nestedatt--cors_admin"></a>
@@ -53,7 +51,333 @@ Read-Only:
 
 Read-Only:
 
+- `identity` (Attributes) (see [below for nested schema](#nestedatt--services--identity))
 - `permission` (Attributes) (see [below for nested schema](#nestedatt--services--permission))
+
+<a id="nestedatt--services--identity"></a>
+### Nested Schema for `services.identity`
+
+Read-Only:
+
+- `config` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config))
+
+<a id="nestedatt--services--identity--config"></a>
+### Nested Schema for `services.identity.config`
+
+Read-Only:
+
+- `identity` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--identity))
+- `selfservice` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice))
+
+<a id="nestedatt--services--identity--config--identity"></a>
+### Nested Schema for `services.identity.config.selfservice`
+
+Read-Only:
+
+- `default_schema_id` (String)
+- `schemas` (Attributes List) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--schemas))
+
+<a id="nestedatt--services--identity--config--selfservice--schemas"></a>
+### Nested Schema for `services.identity.config.selfservice.schemas`
+
+Read-Only:
+
+- `id` (String)
+- `url` (String)
+
+
+
+<a id="nestedatt--services--identity--config--selfservice"></a>
+### Nested Schema for `services.identity.config.selfservice`
+
+Read-Only:
+
+- `allowed_return_urls` (List of String)
+- `default_browser_return_url` (String)
+- `flows` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--flows))
+- `methods` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--methods))
+
+<a id="nestedatt--services--identity--config--selfservice--flows"></a>
+### Nested Schema for `services.identity.config.selfservice.flows`
+
+Read-Only:
+
+- `error` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--flows--error))
+- `login` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--flows--login))
+- `logout` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--flows--logout))
+- `recovery` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--flows--recovery))
+- `registration` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--flows--registration))
+- `settings` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--flows--settings))
+- `verification` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--flows--verification))
+
+<a id="nestedatt--services--identity--config--selfservice--flows--error"></a>
+### Nested Schema for `services.identity.config.selfservice.flows.verification`
+
+Read-Only:
+
+- `ui_url` (String)
+
+
+<a id="nestedatt--services--identity--config--selfservice--flows--login"></a>
+### Nested Schema for `services.identity.config.selfservice.flows.verification`
+
+Read-Only:
+
+- `lifespan` (String)
+- `ui_url` (String)
+
+
+<a id="nestedatt--services--identity--config--selfservice--flows--logout"></a>
+### Nested Schema for `services.identity.config.selfservice.flows.verification`
+
+Read-Only:
+
+- `after` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--flows--verification--after))
+
+<a id="nestedatt--services--identity--config--selfservice--flows--verification--after"></a>
+### Nested Schema for `services.identity.config.selfservice.flows.verification.after`
+
+Read-Only:
+
+- `default_browser_return_url` (String)
+
+
+
+<a id="nestedatt--services--identity--config--selfservice--flows--recovery"></a>
+### Nested Schema for `services.identity.config.selfservice.flows.verification`
+
+Read-Only:
+
+- `enabled` (Boolean)
+- `lifespan` (String)
+- `notify_unknown_recipients` (Boolean)
+- `ui_url` (String)
+- `use` (String)
+
+
+<a id="nestedatt--services--identity--config--selfservice--flows--registration"></a>
+### Nested Schema for `services.identity.config.selfservice.flows.verification`
+
+Read-Only:
+
+- `enabled` (Boolean)
+- `lifespan` (String)
+- `login_hints` (Boolean)
+- `ui_url` (String)
+
+
+<a id="nestedatt--services--identity--config--selfservice--flows--settings"></a>
+### Nested Schema for `services.identity.config.selfservice.flows.verification`
+
+Read-Only:
+
+- `lifespan` (String)
+- `privileged_session_max_age` (String)
+- `required_aal` (String)
+- `ui_url` (String)
+
+
+<a id="nestedatt--services--identity--config--selfservice--flows--verification"></a>
+### Nested Schema for `services.identity.config.selfservice.flows.verification`
+
+Read-Only:
+
+- `enabled` (Boolean)
+- `lifespan` (String)
+- `notify_unknown_recipients` (Boolean)
+- `ui_url` (String)
+- `use` (String)
+
+
+
+<a id="nestedatt--services--identity--config--selfservice--methods"></a>
+### Nested Schema for `services.identity.config.selfservice.methods`
+
+Read-Only:
+
+- `code` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--methods--code))
+- `link` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--methods--link))
+- `lookup_secret` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--methods--lookup_secret))
+- `oidc` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--methods--oidc))
+- `password` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--methods--password))
+- `profile` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--methods--profile))
+- `totp` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--methods--totp))
+- `webauthn` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--methods--webauthn))
+
+<a id="nestedatt--services--identity--config--selfservice--methods--code"></a>
+### Nested Schema for `services.identity.config.selfservice.methods.webauthn`
+
+Read-Only:
+
+- `config` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--methods--webauthn--config))
+- `enabled` (Boolean)
+- `passwordless_enabled` (Boolean)
+- `passwordless_login_fallback_enabled` (Boolean)
+
+<a id="nestedatt--services--identity--config--selfservice--methods--webauthn--config"></a>
+### Nested Schema for `services.identity.config.selfservice.methods.webauthn.passwordless_login_fallback_enabled`
+
+Read-Only:
+
+- `lifespan` (String)
+
+
+
+<a id="nestedatt--services--identity--config--selfservice--methods--link"></a>
+### Nested Schema for `services.identity.config.selfservice.methods.webauthn`
+
+Read-Only:
+
+- `config` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--methods--webauthn--config))
+- `enabled` (Boolean)
+
+<a id="nestedatt--services--identity--config--selfservice--methods--webauthn--config"></a>
+### Nested Schema for `services.identity.config.selfservice.methods.webauthn.enabled`
+
+Read-Only:
+
+- `base_url` (String)
+- `lifespan` (String)
+
+
+
+<a id="nestedatt--services--identity--config--selfservice--methods--lookup_secret"></a>
+### Nested Schema for `services.identity.config.selfservice.methods.webauthn`
+
+Read-Only:
+
+- `enabled` (Boolean)
+
+
+<a id="nestedatt--services--identity--config--selfservice--methods--oidc"></a>
+### Nested Schema for `services.identity.config.selfservice.methods.webauthn`
+
+Read-Only:
+
+- `config` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--methods--webauthn--config))
+- `enabled` (Boolean)
+
+<a id="nestedatt--services--identity--config--selfservice--methods--webauthn--config"></a>
+### Nested Schema for `services.identity.config.selfservice.methods.webauthn.enabled`
+
+Read-Only:
+
+- `base_redirect_uri` (String)
+- `providers` (Attributes List) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--methods--webauthn--enabled--providers))
+
+<a id="nestedatt--services--identity--config--selfservice--methods--webauthn--enabled--providers"></a>
+### Nested Schema for `services.identity.config.selfservice.methods.webauthn.enabled.providers`
+
+Read-Only:
+
+- `additional_id_token_audiences` (List of String)
+- `apple_private_key` (String, Sensitive)
+- `apple_private_key_id` (String)
+- `apple_team_id` (String)
+- `auth_url` (String)
+- `client_id` (String)
+- `client_secret` (String)
+- `id` (String)
+- `issuer_url` (String)
+- `label` (String)
+- `mapper_url` (String)
+- `microsoft_tenant` (String)
+- `organization_id` (String)
+- `provider` (String)
+- `requested_claims` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--methods--webauthn--enabled--providers--requested_claims))
+- `scope` (List of String)
+- `subject_source` (String)
+- `token_url` (String)
+
+<a id="nestedatt--services--identity--config--selfservice--methods--webauthn--enabled--providers--requested_claims"></a>
+### Nested Schema for `services.identity.config.selfservice.methods.webauthn.enabled.providers.requested_claims`
+
+Read-Only:
+
+- `id_token` (List of String)
+
+
+
+
+
+<a id="nestedatt--services--identity--config--selfservice--methods--password"></a>
+### Nested Schema for `services.identity.config.selfservice.methods.webauthn`
+
+Read-Only:
+
+- `config` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--methods--webauthn--config))
+- `enabled` (Boolean)
+
+<a id="nestedatt--services--identity--config--selfservice--methods--webauthn--config"></a>
+### Nested Schema for `services.identity.config.selfservice.methods.webauthn.enabled`
+
+Read-Only:
+
+- `haveibeenpwned_enabled` (Boolean)
+- `haveibeenpwned_host` (String)
+- `identifier_similarity_check_enabled` (Boolean)
+- `ignore_network_errors` (Boolean)
+- `max_breaches` (Number)
+- `min_password_length` (Number)
+
+
+
+<a id="nestedatt--services--identity--config--selfservice--methods--profile"></a>
+### Nested Schema for `services.identity.config.selfservice.methods.webauthn`
+
+Read-Only:
+
+- `enabled` (Boolean)
+
+
+<a id="nestedatt--services--identity--config--selfservice--methods--totp"></a>
+### Nested Schema for `services.identity.config.selfservice.methods.webauthn`
+
+Read-Only:
+
+- `config` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--methods--webauthn--config))
+- `enabled` (Boolean)
+
+<a id="nestedatt--services--identity--config--selfservice--methods--webauthn--config"></a>
+### Nested Schema for `services.identity.config.selfservice.methods.webauthn.enabled`
+
+Read-Only:
+
+- `issuer` (String)
+
+
+
+<a id="nestedatt--services--identity--config--selfservice--methods--webauthn"></a>
+### Nested Schema for `services.identity.config.selfservice.methods.webauthn`
+
+Read-Only:
+
+- `config` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--methods--webauthn--config))
+- `enabled` (Boolean)
+
+<a id="nestedatt--services--identity--config--selfservice--methods--webauthn--config"></a>
+### Nested Schema for `services.identity.config.selfservice.methods.webauthn.enabled`
+
+Read-Only:
+
+- `passwordless` (Boolean)
+- `rp` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--methods--webauthn--enabled--rp))
+
+<a id="nestedatt--services--identity--config--selfservice--methods--webauthn--enabled--rp"></a>
+### Nested Schema for `services.identity.config.selfservice.methods.webauthn.enabled.rp`
+
+Read-Only:
+
+- `display_name` (String)
+- `icon` (String)
+- `id` (String)
+
+
+
+
+
+
+
 
 <a id="nestedatt--services--permission"></a>
 ### Nested Schema for `services.permission`

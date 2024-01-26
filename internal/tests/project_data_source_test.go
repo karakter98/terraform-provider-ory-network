@@ -23,6 +23,8 @@ func TestAccProjectDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.orynetwork_project.test", "name", "Test"),
 					resource.TestCheckResourceAttrSet("data.orynetwork_project.test", "slug"),
 					resource.TestCheckResourceAttr("data.orynetwork_project.test", "services.permission.config.namespaces.#", "1"),
+					resource.TestCheckResourceAttr("data.orynetwork_project.test", "services.identity.config.identity.default_schema_id", "preset://email"),
+					resource.TestCheckResourceAttr("data.orynetwork_project.test", "services.identity.config.selfservice.methods.password.enabled", "true"),
 				),
 			},
 		},

@@ -69,6 +69,13 @@ func UpdateProject(c *ory.APIClient, data *projectmodel.ProjectType, ctx *contex
 		}
 		services.SetPermission(*permission)
 	}
+	if newServices != nil && newServices.Identity != nil {
+		identity, err := newServices.Identity.ToApiRepresentation()
+		if err != nil {
+			return nil, err
+		}
+		services.SetIdentity(*identity)
+	}
 
 	setProjectBody := ory.NewSetProject(
 		adminCors,
