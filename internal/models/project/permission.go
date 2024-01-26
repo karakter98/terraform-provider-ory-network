@@ -21,7 +21,7 @@ type PermissionType struct {
 	Config PermissionConfigType `tfsdk:"config" json:"config"`
 }
 
-// MarshalJSON For json.Marshal compatibility
+// MarshalJSON For json.Marshal compatibility.
 func (namespace *PermissionNamespaceType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[string]interface{}{
 		"id":   namespace.Id.ValueInt64(),

@@ -17,16 +17,16 @@ Ory Network Project
 
 ### Required
 
-- `id` (String) Project identifier
+- `id` (String) Project identifier (UUID)
 
 ### Read-Only
 
 - `cors_admin` (Attributes) (see [below for nested schema](#nestedatt--cors_admin))
 - `cors_public` (Attributes) (see [below for nested schema](#nestedatt--cors_public))
-- `name` (String) Project name
+- `name` (String)
 - `revision_id` (String)
 - `services` (Attributes) (see [below for nested schema](#nestedatt--services))
-- `slug` (String) Project slug
+- `slug` (String)
 - `state` (String)
 - `workspace_id` (String)
 
@@ -53,29 +53,26 @@ Read-Only:
 
 Read-Only:
 
-- `identity` (Object) (see [below for nested schema](#nestedatt--services--identity))
-- `oauth2` (Object) (see [below for nested schema](#nestedatt--services--oauth2))
-- `permission` (Object) (see [below for nested schema](#nestedatt--services--permission))
-
-<a id="nestedatt--services--identity"></a>
-### Nested Schema for `services.identity`
-
-Read-Only:
-
-- `config` (String)
-
-
-<a id="nestedatt--services--oauth2"></a>
-### Nested Schema for `services.oauth2`
-
-Read-Only:
-
-- `config` (String)
-
+- `permission` (Attributes) (see [below for nested schema](#nestedatt--services--permission))
 
 <a id="nestedatt--services--permission"></a>
 ### Nested Schema for `services.permission`
 
 Read-Only:
 
-- `config` (String)
+- `config` (Attributes) (see [below for nested schema](#nestedatt--services--permission--config))
+
+<a id="nestedatt--services--permission--config"></a>
+### Nested Schema for `services.permission.config`
+
+Read-Only:
+
+- `namespaces` (Attributes List) (see [below for nested schema](#nestedatt--services--permission--config--namespaces))
+
+<a id="nestedatt--services--permission--config--namespaces"></a>
+### Nested Schema for `services.permission.config.namespaces`
+
+Read-Only:
+
+- `id` (Number)
+- `name` (String)

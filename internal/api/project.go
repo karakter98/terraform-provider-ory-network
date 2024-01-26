@@ -57,7 +57,9 @@ func UpdateProject(c *ory.APIClient, data *projectmodel.ProjectType, ctx *contex
 		publicCors = *newPublicCorsModel.ToApiRepresentation()
 	}
 
-	services := ory.ProjectServices{}
+	services := ory.ProjectServices{
+		Permission: ory.NewProjectServicePermission(make(map[string]interface{})),
+	}
 	newServices := projectmodel.NewProjectServicesFromTerraformRepresentation(&data.Services, ctx)
 
 	if newServices != nil && newServices.Permission != nil {
