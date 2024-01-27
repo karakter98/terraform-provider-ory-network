@@ -76,6 +76,46 @@ resource "orynetwork_project" "test_identity" {
               }
             }
           }
+          flows = {
+            logout = {
+              after = {
+                default_browser_return_url = "https://google.com"
+              }
+            }
+            error = {
+              ui_url = "https://google.com"
+            }
+            registration = {
+              login_hints = true
+              ui_url = "https://google.com"
+              lifespan = "5m0s"
+              enabled = true
+            }
+            login = {
+              ui_url = "https://google.com"
+              lifespan = "5m0s"
+            }
+            verification = {
+              ui_url = "https://google.com"
+              lifespan = "5m0s"
+              use = "code"
+              notify_unknown_recipients = true
+              enabled = true
+            }
+            recovery = {
+              ui_url = "https://google.com"
+              lifespan = "5m0s"
+              use = "code"
+              notify_unknown_recipients = true
+              enabled = true
+            }
+            settings = {
+              ui_url = "https://google.com"
+              lifespan = "5m0s"
+              privileged_session_max_age = "5m0s"
+              required_aal = "highest_available"
+            }
+          }
         }
       }
     }

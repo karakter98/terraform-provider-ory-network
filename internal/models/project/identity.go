@@ -531,8 +531,21 @@ func NewProjectIdentityFromApiRepresentation(apiIdentity *ory.ProjectServiceIden
 		Schemas:         identitySchemas,
 	}
 
-	rawSelfServiceMethods := rawSelfService["methods"].(map[string]interface{})
+	selfService := IdentitySelfServiceType{
+		DefaultBrowserReturnUrl: types.StringValue(rawSelfService["default_browser_return_url"].(string)),
+		Methods:                 newProjectIdentityMethodsFromApiRepresentation(rawSelfService["methods"].(map[string]interface{})),
+		Flows:                   newProjectIdentityFlowsFromApiRepresentation(rawSelfService["flows"].(map[string]interface{})),
+	}
 
+	return &IdentityType{
+		Config: IdentityConfigType{
+			Identity:    identity,
+			SelfService: selfService,
+		},
+	}
+}
+
+func newProjectIdentityMethodsFromApiRepresentation(rawSelfServiceMethods map[string]interface{}) *IdentitySelfServiceMethodsType {
 	rawSelfServiceMethodsLink := rawSelfServiceMethods["link"].(map[string]interface{})
 	rawSelfServiceMethodsLinkConfig := rawSelfServiceMethodsLink["config"].(map[string]interface{})
 
@@ -760,7 +773,7 @@ func NewProjectIdentityFromApiRepresentation(apiIdentity *ory.ProjectServiceIden
 		selfServiceMethodsOidc.Config.BaseRedirectUri = types.StringValue(rawSelfServiceMethodsOidcConfig["base_redirect_uri"].(string))
 	}
 
-	selfServiceMethods := IdentitySelfServiceMethodsType{
+	return &IdentitySelfServiceMethodsType{
 		Link:         selfServiceMethodsLink,
 		Code:         selfServiceMethodsCode,
 		Password:     selfServiceMethodsPassword,
@@ -770,19 +783,109 @@ func NewProjectIdentityFromApiRepresentation(apiIdentity *ory.ProjectServiceIden
 		WebAuthN:     selfServiceMethodsWebAuthN,
 		Oidc:         selfServiceMethodsOidc,
 	}
+}
 
-	selfService := IdentitySelfServiceType{
-		DefaultBrowserReturnUrl: types.StringValue(rawSelfService["default_browser_return_url"].(string)),
-		// TODO: Implement these
-		Methods: &selfServiceMethods,
-		Flows:   &IdentitySelfServiceFlowsType{},
+func newProjectIdentityFlowsFromApiRepresentation(rawSelfServiceFlows map[string]interface{}) *IdentitySelfServiceFlowsType {
+	rawSelfServiceFlowsLogout := rawSelfServiceFlows["logout"].(map[string]interface{})
+	rawSelfServiceFlowsLogoutAfter := rawSelfServiceFlowsLogout["after"].(map[string]interface{})
+
+	rawSelfServiceFlowsError := rawSelfServiceFlows["error"].(map[string]interface{})
+	rawSelfServiceFlowsRegistration := rawSelfServiceFlows["registration"].(map[string]interface{})
+	rawSelfServiceFlowsLogin := rawSelfServiceFlows["login"].(map[string]interface{})
+	rawSelfServiceFlowsVerification := rawSelfServiceFlows["verification"].(map[string]interface{})
+	rawSelfServiceFlowsRecovery := rawSelfServiceFlows["recovery"].(map[string]interface{})
+	rawSelfServiceFlowsSettings := rawSelfServiceFlows["settings"].(map[string]interface{})
+
+	selfServiceFlowsLogout := &IdentitySelfServiceFlowsLogoutType{
+		After: &IdentitySelfServiceFlowsLogoutAfterType{},
+	}
+	if rawSelfServiceFlowsLogoutAfter["default_browser_return_url"] != nil {
+		selfServiceFlowsLogout.After.DefaultBrowserReturnUrl = types.StringValue(rawSelfServiceFlowsLogoutAfter["default_browser_return_url"].(string))
 	}
 
-	return &IdentityType{
-		Config: IdentityConfigType{
-			Identity:    identity,
-			SelfService: selfService,
-		},
+	selfServiceFlowsError := &IdentitySelfServiceFlowsErrorType{}
+	if rawSelfServiceFlowsError["ui_url"] != nil {
+		selfServiceFlowsError.UiUrl = types.StringValue(rawSelfServiceFlowsError["ui_url"].(string))
+	}
+
+	selfServiceFlowsRegistration := &IdentitySelfServiceFlowsRegistrationType{}
+	if rawSelfServiceFlowsRegistration["login_hints"] != nil {
+		selfServiceFlowsRegistration.LoginHints = types.BoolValue(rawSelfServiceFlowsRegistration["login_hints"].(bool))
+	}
+	if rawSelfServiceFlowsRegistration["ui_url"] != nil {
+		selfServiceFlowsRegistration.UiUrl = types.StringValue(rawSelfServiceFlowsRegistration["ui_url"].(string))
+	}
+	if rawSelfServiceFlowsRegistration["lifespan"] != nil {
+		selfServiceFlowsRegistration.Lifespan = types.StringValue(rawSelfServiceFlowsRegistration["lifespan"].(string))
+	}
+	if rawSelfServiceFlowsRegistration["enabled"] != nil {
+		selfServiceFlowsRegistration.Enabled = types.BoolValue(rawSelfServiceFlowsRegistration["enabled"].(bool))
+	}
+
+	selfServiceFlowsLogin := &IdentitySelfServiceFlowsLoginType{}
+	if rawSelfServiceFlowsLogin["ui_url"] != nil {
+		selfServiceFlowsLogin.UiUrl = types.StringValue(rawSelfServiceFlowsLogin["ui_url"].(string))
+	}
+	if rawSelfServiceFlowsLogin["lifespan"] != nil {
+		selfServiceFlowsLogin.Lifespan = types.StringValue(rawSelfServiceFlowsLogin["lifespan"].(string))
+	}
+
+	selfServiceFlowsVerification := &IdentitySelfServiceFlowsVerificationType{}
+	if rawSelfServiceFlowsVerification["ui_url"] != nil {
+		selfServiceFlowsVerification.UiUrl = types.StringValue(rawSelfServiceFlowsVerification["ui_url"].(string))
+	}
+	if rawSelfServiceFlowsVerification["lifespan"] != nil {
+		selfServiceFlowsVerification.Lifespan = types.StringValue(rawSelfServiceFlowsVerification["lifespan"].(string))
+	}
+	if rawSelfServiceFlowsVerification["use"] != nil {
+		selfServiceFlowsVerification.Use = types.StringValue(rawSelfServiceFlowsVerification["use"].(string))
+	}
+	if rawSelfServiceFlowsVerification["notify_unknown_recipients"] != nil {
+		selfServiceFlowsVerification.NotifyUnknownRecipients = types.BoolValue(rawSelfServiceFlowsVerification["notify_unknown_recipients"].(bool))
+	}
+	if rawSelfServiceFlowsVerification["enabled"] != nil {
+		selfServiceFlowsVerification.Enabled = types.BoolValue(rawSelfServiceFlowsVerification["enabled"].(bool))
+	}
+
+	selfServiceFlowsRecovery := &IdentitySelfServiceFlowsRecoveryType{}
+	if rawSelfServiceFlowsRecovery["ui_url"] != nil {
+		selfServiceFlowsRecovery.UiUrl = types.StringValue(rawSelfServiceFlowsRecovery["ui_url"].(string))
+	}
+	if rawSelfServiceFlowsRecovery["lifespan"] != nil {
+		selfServiceFlowsRecovery.Lifespan = types.StringValue(rawSelfServiceFlowsRecovery["lifespan"].(string))
+	}
+	if rawSelfServiceFlowsRecovery["use"] != nil {
+		selfServiceFlowsRecovery.Use = types.StringValue(rawSelfServiceFlowsRecovery["use"].(string))
+	}
+	if rawSelfServiceFlowsRecovery["notify_unknown_recipients"] != nil {
+		selfServiceFlowsRecovery.NotifyUnknownRecipients = types.BoolValue(rawSelfServiceFlowsRecovery["notify_unknown_recipients"].(bool))
+	}
+	if rawSelfServiceFlowsRecovery["enabled"] != nil {
+		selfServiceFlowsRecovery.Enabled = types.BoolValue(rawSelfServiceFlowsRecovery["enabled"].(bool))
+	}
+
+	selfServiceFlowsSettings := &IdentitySelfServiceFlowsSettingsType{}
+	if rawSelfServiceFlowsSettings["ui_url"] != nil {
+		selfServiceFlowsSettings.UiUrl = types.StringValue(rawSelfServiceFlowsSettings["ui_url"].(string))
+	}
+	if rawSelfServiceFlowsSettings["lifespan"] != nil {
+		selfServiceFlowsSettings.Lifespan = types.StringValue(rawSelfServiceFlowsSettings["lifespan"].(string))
+	}
+	if rawSelfServiceFlowsSettings["privileged_session_max_age"] != nil {
+		selfServiceFlowsSettings.PrivilegedSessionMaxAge = types.StringValue(rawSelfServiceFlowsSettings["privileged_session_max_age"].(string))
+	}
+	if rawSelfServiceFlowsSettings["required_aal"] != nil {
+		selfServiceFlowsSettings.RequiredAal = types.StringValue(rawSelfServiceFlowsSettings["required_aal"].(string))
+	}
+
+	return &IdentitySelfServiceFlowsType{
+		Logout:       selfServiceFlowsLogout,
+		Error:        selfServiceFlowsError,
+		Registration: selfServiceFlowsRegistration,
+		Login:        selfServiceFlowsLogin,
+		Verification: selfServiceFlowsVerification,
+		Recovery:     selfServiceFlowsRecovery,
+		Settings:     selfServiceFlowsSettings,
 	}
 }
 
