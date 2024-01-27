@@ -139,14 +139,6 @@ func (r *ProjectResourceProps) Schema(ctx context.Context, req resource.SchemaRe
 											"default_browser_return_url": schema.StringAttribute{
 												Required: true,
 											},
-											"allowed_return_urls": schema.ListAttribute{
-												ElementType: types.StringType,
-												Optional:    true,
-												Computed:    true,
-												PlanModifiers: []planmodifier.List{
-													listplanmodifier.UseStateForUnknown(),
-												},
-											},
 											"methods": schema.SingleNestedAttribute{
 												Attributes: map[string]schema.Attribute{
 													"link": schema.SingleNestedAttribute{
@@ -175,34 +167,15 @@ func (r *ProjectResourceProps) Schema(ctx context.Context, req resource.SchemaRe
 																},
 															},
 															"enabled": schema.BoolAttribute{
-																Optional: true,
-																Computed: true,
-																PlanModifiers: []planmodifier.Bool{
-																	boolplanmodifier.UseStateForUnknown(),
-																},
+																Required: true,
 															},
 														},
-														Optional: true,
-														Computed: true,
-														PlanModifiers: []planmodifier.Object{
-															objectplanmodifier.UseStateForUnknown(),
-														},
+														Required: true,
 													},
 													"code": schema.SingleNestedAttribute{
 														Attributes: map[string]schema.Attribute{
-															"passwordless_login_fallback_enabled": schema.BoolAttribute{
-																Optional: true,
-																Computed: true,
-																PlanModifiers: []planmodifier.Bool{
-																	boolplanmodifier.UseStateForUnknown(),
-																},
-															},
 															"enabled": schema.BoolAttribute{
-																Optional: true,
-																Computed: true,
-																PlanModifiers: []planmodifier.Bool{
-																	boolplanmodifier.UseStateForUnknown(),
-																},
+																Required: true,
 															},
 															"passwordless_enabled": schema.BoolAttribute{
 																Optional: true,
@@ -228,20 +201,12 @@ func (r *ProjectResourceProps) Schema(ctx context.Context, req resource.SchemaRe
 																},
 															},
 														},
-														Optional: true,
-														Computed: true,
-														PlanModifiers: []planmodifier.Object{
-															objectplanmodifier.UseStateForUnknown(),
-														},
+														Required: true,
 													},
 													"password": schema.SingleNestedAttribute{
 														Attributes: map[string]schema.Attribute{
 															"enabled": schema.BoolAttribute{
-																Optional: true,
-																Computed: true,
-																PlanModifiers: []planmodifier.Bool{
-																	boolplanmodifier.UseStateForUnknown(),
-																},
+																Required: true,
 															},
 															"config": schema.SingleNestedAttribute{
 																Attributes: map[string]schema.Attribute{
@@ -280,13 +245,6 @@ func (r *ProjectResourceProps) Schema(ctx context.Context, req resource.SchemaRe
 																			boolplanmodifier.UseStateForUnknown(),
 																		},
 																	},
-																	"haveibeenpwned_host": schema.StringAttribute{
-																		Optional: true,
-																		Computed: true,
-																		PlanModifiers: []planmodifier.String{
-																			stringplanmodifier.UseStateForUnknown(),
-																		},
-																	},
 																},
 																Optional: true,
 																Computed: true,
@@ -295,11 +253,7 @@ func (r *ProjectResourceProps) Schema(ctx context.Context, req resource.SchemaRe
 																},
 															},
 														},
-														Optional: true,
-														Computed: true,
-														PlanModifiers: []planmodifier.Object{
-															objectplanmodifier.UseStateForUnknown(),
-														},
+														Required: true,
 													},
 													"totp": schema.SingleNestedAttribute{
 														Attributes: map[string]schema.Attribute{
@@ -320,59 +274,31 @@ func (r *ProjectResourceProps) Schema(ctx context.Context, req resource.SchemaRe
 																},
 															},
 															"enabled": schema.BoolAttribute{
-																Optional: true,
-																Computed: true,
-																PlanModifiers: []planmodifier.Bool{
-																	boolplanmodifier.UseStateForUnknown(),
-																},
+																Required: true,
 															},
 														},
-														Optional: true,
-														Computed: true,
-														PlanModifiers: []planmodifier.Object{
-															objectplanmodifier.UseStateForUnknown(),
-														},
+														Required: true,
 													},
 													"lookup_secret": schema.SingleNestedAttribute{
 														Attributes: map[string]schema.Attribute{
 															"enabled": schema.BoolAttribute{
-																Optional: true,
-																Computed: true,
-																PlanModifiers: []planmodifier.Bool{
-																	boolplanmodifier.UseStateForUnknown(),
-																},
+																Required: true,
 															},
 														},
-														Optional: true,
-														Computed: true,
-														PlanModifiers: []planmodifier.Object{
-															objectplanmodifier.UseStateForUnknown(),
-														},
+														Required: true,
 													},
 													"profile": schema.SingleNestedAttribute{
 														Attributes: map[string]schema.Attribute{
 															"enabled": schema.BoolAttribute{
-																Optional: true,
-																Computed: true,
-																PlanModifiers: []planmodifier.Bool{
-																	boolplanmodifier.UseStateForUnknown(),
-																},
+																Required: true,
 															},
 														},
-														Optional: true,
-														Computed: true,
-														PlanModifiers: []planmodifier.Object{
-															objectplanmodifier.UseStateForUnknown(),
-														},
+														Required: true,
 													},
 													"webauthn": schema.SingleNestedAttribute{
 														Attributes: map[string]schema.Attribute{
 															"enabled": schema.BoolAttribute{
-																Optional: true,
-																Computed: true,
-																PlanModifiers: []planmodifier.Bool{
-																	boolplanmodifier.UseStateForUnknown(),
-																},
+																Required: true,
 															},
 															"config": schema.SingleNestedAttribute{
 																Attributes: map[string]schema.Attribute{
@@ -391,13 +317,6 @@ func (r *ProjectResourceProps) Schema(ctx context.Context, req resource.SchemaRe
 																			"display_name": schema.StringAttribute{
 																				Required: true,
 																			},
-																			"icon": schema.StringAttribute{
-																				Optional: true,
-																				Computed: true,
-																				PlanModifiers: []planmodifier.String{
-																					stringplanmodifier.UseStateForUnknown(),
-																				},
-																			},
 																		},
 																		Optional: true,
 																		Computed: true,
@@ -413,20 +332,12 @@ func (r *ProjectResourceProps) Schema(ctx context.Context, req resource.SchemaRe
 																},
 															},
 														},
-														Optional: true,
-														Computed: true,
-														PlanModifiers: []planmodifier.Object{
-															objectplanmodifier.UseStateForUnknown(),
-														},
+														Required: true,
 													},
 													"oidc": schema.SingleNestedAttribute{
 														Attributes: map[string]schema.Attribute{
 															"enabled": schema.BoolAttribute{
-																Optional: true,
-																Computed: true,
-																PlanModifiers: []planmodifier.Bool{
-																	boolplanmodifier.UseStateForUnknown(),
-																},
+																Required: true,
 															},
 															"config": schema.SingleNestedAttribute{
 																Attributes: map[string]schema.Attribute{
@@ -453,86 +364,42 @@ func (r *ProjectResourceProps) Schema(ctx context.Context, req resource.SchemaRe
 																					Required: true,
 																				},
 																				"client_secret": schema.StringAttribute{
-																					Optional: true,
-																					Computed: true,
-																					PlanModifiers: []planmodifier.String{
-																						stringplanmodifier.UseStateForUnknown(),
-																					},
+																					Required: true,
 																				},
 																				"issuer_url": schema.StringAttribute{
 																					Optional: true,
-																					Computed: true,
-																					PlanModifiers: []planmodifier.String{
-																						stringplanmodifier.UseStateForUnknown(),
-																					},
 																				},
 																				"auth_url": schema.StringAttribute{
 																					Optional: true,
-																					Computed: true,
-																					PlanModifiers: []planmodifier.String{
-																						stringplanmodifier.UseStateForUnknown(),
-																					},
 																				},
 																				"token_url": schema.StringAttribute{
 																					Optional: true,
-																					Computed: true,
-																					PlanModifiers: []planmodifier.String{
-																						stringplanmodifier.UseStateForUnknown(),
-																					},
 																				},
 																				"scope": schema.ListAttribute{
 																					ElementType: types.StringType,
-																					Optional:    true,
-																					Computed:    true,
-																					PlanModifiers: []planmodifier.List{
-																						listplanmodifier.UseStateForUnknown(),
-																					},
+																					Required:    true,
 																				},
 																				"microsoft_tenant": schema.StringAttribute{
 																					Optional: true,
-																					Computed: true,
-																					PlanModifiers: []planmodifier.String{
-																						stringplanmodifier.UseStateForUnknown(),
-																					},
 																				},
 																				"subject_source": schema.StringAttribute{
 																					Optional: true,
-																					Computed: true,
-																					PlanModifiers: []planmodifier.String{
-																						stringplanmodifier.UseStateForUnknown(),
-																					},
 																				},
 																				"apple_team_id": schema.StringAttribute{
 																					Optional: true,
-																					Computed: true,
-																					PlanModifiers: []planmodifier.String{
-																						stringplanmodifier.UseStateForUnknown(),
-																					},
 																				},
 																				"apple_private_key_id": schema.StringAttribute{
 																					Optional: true,
-																					Computed: true,
-																					PlanModifiers: []planmodifier.String{
-																						stringplanmodifier.UseStateForUnknown(),
-																					},
 																				},
 																				"apple_private_key": schema.StringAttribute{
 																					Optional:  true,
-																					Computed:  true,
 																					Sensitive: true,
-																					PlanModifiers: []planmodifier.String{
-																						stringplanmodifier.UseStateForUnknown(),
-																					},
 																				},
 																				"requested_claims": schema.SingleNestedAttribute{
 																					Attributes: map[string]schema.Attribute{
 																						"id_token": schema.ListAttribute{
 																							ElementType: types.StringType,
 																							Optional:    true,
-																							Computed:    true,
-																							PlanModifiers: []planmodifier.List{
-																								listplanmodifier.UseStateForUnknown(),
-																							},
 																						},
 																					},
 																					Optional: true,
@@ -543,17 +410,9 @@ func (r *ProjectResourceProps) Schema(ctx context.Context, req resource.SchemaRe
 																				},
 																				"organization_id": schema.StringAttribute{
 																					Optional: true,
-																					Computed: true,
-																					PlanModifiers: []planmodifier.String{
-																						stringplanmodifier.UseStateForUnknown(),
-																					},
 																				},
 																				"label": schema.StringAttribute{
 																					Optional: true,
-																					Computed: true,
-																					PlanModifiers: []planmodifier.String{
-																						stringplanmodifier.UseStateForUnknown(),
-																					},
 																				},
 																				"additional_id_token_audiences": schema.ListAttribute{
 																					ElementType: types.StringType,
@@ -579,18 +438,10 @@ func (r *ProjectResourceProps) Schema(ctx context.Context, req resource.SchemaRe
 																},
 															},
 														},
-														Optional: true,
-														Computed: true,
-														PlanModifiers: []planmodifier.Object{
-															objectplanmodifier.UseStateForUnknown(),
-														},
+														Required: true,
 													},
 												},
-												Optional: true,
-												Computed: true,
-												PlanModifiers: []planmodifier.Object{
-													objectplanmodifier.UseStateForUnknown(),
-												},
+												Required: true,
 											},
 											"flows": schema.SingleNestedAttribute{
 												Attributes: map[string]schema.Attribute{

@@ -92,7 +92,6 @@ Read-Only:
 
 Read-Only:
 
-- `allowed_return_urls` (List of String)
 - `default_browser_return_url` (String)
 - `flows` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--flows))
 - `methods` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--methods))
@@ -212,10 +211,9 @@ Read-Only:
 - `config` (Attributes) (see [below for nested schema](#nestedatt--services--identity--config--selfservice--methods--webauthn--config))
 - `enabled` (Boolean)
 - `passwordless_enabled` (Boolean)
-- `passwordless_login_fallback_enabled` (Boolean)
 
 <a id="nestedatt--services--identity--config--selfservice--methods--webauthn--config"></a>
-### Nested Schema for `services.identity.config.selfservice.methods.webauthn.passwordless_login_fallback_enabled`
+### Nested Schema for `services.identity.config.selfservice.methods.webauthn.passwordless_enabled`
 
 Read-Only:
 
@@ -314,7 +312,6 @@ Read-Only:
 Read-Only:
 
 - `haveibeenpwned_enabled` (Boolean)
-- `haveibeenpwned_host` (String)
 - `identifier_similarity_check_enabled` (Boolean)
 - `ignore_network_errors` (Boolean)
 - `max_breaches` (Number)
@@ -369,7 +366,6 @@ Read-Only:
 Read-Only:
 
 - `display_name` (String)
-- `icon` (String)
 - `id` (String)
 
 

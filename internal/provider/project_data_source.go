@@ -101,10 +101,6 @@ func (d *ProjectDataSourceProps) Schema(ctx context.Context, req datasource.Sche
 											"default_browser_return_url": schema.StringAttribute{
 												Computed: true,
 											},
-											"allowed_return_urls": schema.ListAttribute{
-												ElementType: types.StringType,
-												Computed:    true,
-											},
 											"methods": schema.SingleNestedAttribute{
 												Attributes: map[string]schema.Attribute{
 													"link": schema.SingleNestedAttribute{
@@ -128,9 +124,6 @@ func (d *ProjectDataSourceProps) Schema(ctx context.Context, req datasource.Sche
 													},
 													"code": schema.SingleNestedAttribute{
 														Attributes: map[string]schema.Attribute{
-															"passwordless_login_fallback_enabled": schema.BoolAttribute{
-																Computed: true,
-															},
 															"enabled": schema.BoolAttribute{
 																Computed: true,
 															},
@@ -168,9 +161,6 @@ func (d *ProjectDataSourceProps) Schema(ctx context.Context, req datasource.Sche
 																		Computed: true,
 																	},
 																	"identifier_similarity_check_enabled": schema.BoolAttribute{
-																		Computed: true,
-																	},
-																	"haveibeenpwned_host": schema.StringAttribute{
 																		Computed: true,
 																	},
 																},
@@ -227,9 +217,6 @@ func (d *ProjectDataSourceProps) Schema(ctx context.Context, req datasource.Sche
 																				Computed: true,
 																			},
 																			"display_name": schema.StringAttribute{
-																				Computed: true,
-																			},
-																			"icon": schema.StringAttribute{
 																				Computed: true,
 																			},
 																		},

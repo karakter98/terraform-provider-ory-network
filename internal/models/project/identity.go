@@ -34,19 +34,17 @@ type IdentitySelfServiceMethodsCodeConfigType struct {
 }
 
 type IdentitySelfServiceMethodsCodeType struct {
-	PasswordlessLoginFallbackEnabled types.Bool                                `tfsdk:"passwordless_login_fallback_enabled" json:"passwordless_login_fallback_enabled"`
-	Enabled                          types.Bool                                `tfsdk:"enabled" json:"enabled"`
-	PasswordlessEnabled              types.Bool                                `tfsdk:"passwordless_enabled" json:"passwordless_enabled"`
-	Config                           *IdentitySelfServiceMethodsCodeConfigType `tfsdk:"config" json:"config,omitempty"`
+	Enabled             types.Bool                                `tfsdk:"enabled" json:"enabled"`
+	PasswordlessEnabled types.Bool                                `tfsdk:"passwordless_enabled" json:"passwordless_enabled"`
+	Config              *IdentitySelfServiceMethodsCodeConfigType `tfsdk:"config" json:"config,omitempty"`
 }
 
 type IdentitySelfServiceMethodsPasswordConfigType struct {
-	HaveIBeenPwnedEnabled            types.Bool   `tfsdk:"haveibeenpwned_enabled" json:"haveibeenpwned_enabled"`
-	MaxBreaches                      types.Int64  `tfsdk:"max_breaches" json:"max_breaches"`
-	IgnoreNetworkErrors              types.Bool   `tfsdk:"ignore_network_errors" json:"ignore_network_errors"`
-	MinPasswordLength                types.Int64  `tfsdk:"min_password_length" json:"min_password_length"`
-	IdentifierSimilarityCheckEnabled types.Bool   `tfsdk:"identifier_similarity_check_enabled" json:"identifier_similarity_check_enabled"`
-	HaveIBeenPwnedHost               types.String `tfsdk:"haveibeenpwned_host" json:"haveibeenpwned_host"`
+	HaveIBeenPwnedEnabled            types.Bool  `tfsdk:"haveibeenpwned_enabled" json:"haveibeenpwned_enabled"`
+	MaxBreaches                      types.Int64 `tfsdk:"max_breaches" json:"max_breaches"`
+	IgnoreNetworkErrors              types.Bool  `tfsdk:"ignore_network_errors" json:"ignore_network_errors"`
+	MinPasswordLength                types.Int64 `tfsdk:"min_password_length" json:"min_password_length"`
+	IdentifierSimilarityCheckEnabled types.Bool  `tfsdk:"identifier_similarity_check_enabled" json:"identifier_similarity_check_enabled"`
 }
 
 type IdentitySelfServiceMethodsPasswordType struct {
@@ -74,7 +72,6 @@ type IdentitySelfServiceMethodsProfileType struct {
 type IdentitySelfServiceMethodsWebAuthNConfigRpType struct {
 	Id          types.String `tfsdk:"id" json:"id"`
 	DisplayName types.String `tfsdk:"display_name" json:"display_name"`
-	Icon        types.String `tfsdk:"icon" json:"icon"`
 }
 
 type IdentitySelfServiceMethodsWebAuthNConfigType struct {
@@ -192,7 +189,6 @@ type IdentitySelfServiceFlowsType struct {
 
 type IdentitySelfServiceType struct {
 	DefaultBrowserReturnUrl types.String                    `tfsdk:"default_browser_return_url" json:"default_browser_return_url"`
-	AllowedReturnUrls       []types.String                  `tfsdk:"allowed_return_urls" json:"allowed_return_urls"`
 	Methods                 *IdentitySelfServiceMethodsType `tfsdk:"methods" json:"methods,omitempty"`
 	Flows                   *IdentitySelfServiceFlowsType   `tfsdk:"flows" json:"flows,omitempty"`
 }
@@ -211,6 +207,14 @@ func marshalWithoutNulls(jsonObj map[string]interface{}) ([]byte, error) {
 		// Remove null strings from the payload
 		if reflect.TypeOf(v).Kind() == reflect.Pointer && reflect.ValueOf(v).IsNil() {
 			delete(jsonObj, k)
+		}
+		// Remove empty strings from payload
+		if reflect.TypeOf(v).Kind() == reflect.Pointer && !reflect.ValueOf(v).IsNil() {
+			if reflect.Indirect(reflect.ValueOf(v)).Kind() == reflect.String {
+				if *(v.(*string)) == "" {
+					delete(jsonObj, k)
+				}
+			}
 		}
 	}
 	return json.Marshal(jsonObj)
@@ -258,10 +262,9 @@ func (config *IdentitySelfServiceMethodsCodeConfigType) MarshalJSON() ([]byte, e
 // MarshalJSON For json.Marshal compatibility.
 func (code *IdentitySelfServiceMethodsCodeType) MarshalJSON() ([]byte, error) {
 	return marshalWithoutNulls(map[string]interface{}{
-		"passwordless_login_fallback_enabled": code.PasswordlessLoginFallbackEnabled.ValueBool(),
-		"enabled":                             code.Enabled.ValueBool(),
-		"passwordless_enabled":                code.PasswordlessEnabled.ValueBool(),
-		"config":                              code.Config,
+		"enabled":              code.Enabled.ValueBool(),
+		"passwordless_enabled": code.PasswordlessEnabled.ValueBool(),
+		"config":               code.Config,
 	})
 }
 
@@ -273,7 +276,6 @@ func (config *IdentitySelfServiceMethodsPasswordConfigType) MarshalJSON() ([]byt
 		"ignore_network_errors":               config.IgnoreNetworkErrors.ValueBool(),
 		"min_password_length":                 config.MinPasswordLength.ValueInt64Pointer(),
 		"identifier_similarity_check_enabled": config.IdentifierSimilarityCheckEnabled.ValueBool(),
-		"haveibeenpwned_host":                 config.HaveIBeenPwnedHost.ValueStringPointer(),
 	})
 }
 
@@ -319,7 +321,6 @@ func (rp *IdentitySelfServiceMethodsWebAuthNConfigRpType) MarshalJSON() ([]byte,
 	return marshalWithoutNulls(map[string]interface{}{
 		"id":           rp.Id.ValueStringPointer(),
 		"display_name": rp.DisplayName.ValueStringPointer(),
-		"icon":         rp.Icon.ValueStringPointer(),
 	})
 }
 
@@ -341,9 +342,9 @@ func (webAuthN *IdentitySelfServiceMethodsWebAuthNType) MarshalJSON() ([]byte, e
 
 // MarshalJSON For json.Marshal compatibility.
 func (requestedClaims *IdentitySelfServiceMethodsOidcConfigProviderRequestedClaimsType) MarshalJSON() ([]byte, error) {
-	idTokens := make([]*string, 0)
+	idTokens := make(map[string]interface{})
 	for _, idToken := range requestedClaims.IdToken {
-		idTokens = append(idTokens, idToken.ValueStringPointer())
+		idTokens[idToken.ValueString()] = make(map[string]interface{})
 	}
 
 	return marshalWithoutNulls(map[string]interface{}{
@@ -481,14 +482,8 @@ func (settings *IdentitySelfServiceFlowsSettingsType) MarshalJSON() ([]byte, err
 
 // MarshalJSON For json.Marshal compatibility.
 func (selfService *IdentitySelfServiceType) MarshalJSON() ([]byte, error) {
-	allowedReturnUrls := make([]*string, 0)
-	for _, url := range selfService.AllowedReturnUrls {
-		allowedReturnUrls = append(allowedReturnUrls, url.ValueStringPointer())
-	}
-
 	value := map[string]interface{}{
 		"default_browser_return_url": selfService.DefaultBrowserReturnUrl.ValueStringPointer(),
-		"allowed_return_urls":        allowedReturnUrls,
 		"methods":                    selfService.Methods,
 		"flows":                      selfService.Flows,
 	}
@@ -534,11 +529,6 @@ func NewProjectIdentityFromApiRepresentation(apiIdentity *ory.ProjectServiceIden
 	identity := IdentityIdentityType{
 		DefaultSchemaId: types.StringValue(rawIdentity["default_schema_id"].(string)),
 		Schemas:         identitySchemas,
-	}
-
-	selfServiceAllowedReturnUrls := make([]types.String, 0)
-	for _, allowedReturnUrl := range rawSelfService["allowed_return_urls"].([]interface{}) {
-		selfServiceAllowedReturnUrls = append(selfServiceAllowedReturnUrls, types.StringValue(allowedReturnUrl.(string)))
 	}
 
 	rawSelfServiceMethods := rawSelfService["methods"].(map[string]interface{})
@@ -687,11 +677,7 @@ func NewProjectIdentityFromApiRepresentation(apiIdentity *ory.ProjectServiceIden
 	selfServiceMethodsCode := &IdentitySelfServiceMethodsCodeType{
 		Config: &IdentitySelfServiceMethodsCodeConfigType{},
 	}
-	if rawSelfServiceMethodsCode["passwordless_login_fallback_enabled"] != nil {
-		selfServiceMethodsCode.PasswordlessLoginFallbackEnabled = types.BoolValue(rawSelfServiceMethodsCode["passwordless_login_fallback_enabled"].(bool))
-	} else {
-		selfServiceMethodsCode.PasswordlessLoginFallbackEnabled = types.BoolValue(false)
-	}
+
 	if rawSelfServiceMethodsCode["enabled"] != nil {
 		selfServiceMethodsCode.Enabled = types.BoolValue(rawSelfServiceMethodsCode["enabled"].(bool))
 	}
@@ -722,9 +708,6 @@ func NewProjectIdentityFromApiRepresentation(apiIdentity *ory.ProjectServiceIden
 	}
 	if rawSelfServiceMethodsPasswordConfig["identifier_similarity_check_enabled"] != nil {
 		selfServiceMethodsPassword.Config.IdentifierSimilarityCheckEnabled = types.BoolValue(rawSelfServiceMethodsPasswordConfig["identifier_similarity_check_enabled"].(bool))
-	}
-	if rawSelfServiceMethodsPasswordConfig["haveibeenpwned_host"] != nil {
-		selfServiceMethodsPassword.Config.HaveIBeenPwnedHost = types.StringValue(rawSelfServiceMethodsPasswordConfig["haveibeenpwned_host"].(string))
 	}
 
 	selfServiceMethodsTotp := &IdentitySelfServiceMethodsTotpType{
@@ -764,9 +747,6 @@ func NewProjectIdentityFromApiRepresentation(apiIdentity *ory.ProjectServiceIden
 	if rawSelfServiceMethodsWebAuthNConfigRp["display_name"] != nil {
 		selfServiceMethodsWebAuthN.Config.Rp.DisplayName = types.StringValue(rawSelfServiceMethodsWebAuthNConfigRp["display_name"].(string))
 	}
-	if rawSelfServiceMethodsWebAuthNConfigRp["icon"] != nil {
-		selfServiceMethodsWebAuthN.Config.Rp.Icon = types.StringValue(rawSelfServiceMethodsWebAuthNConfigRp["icon"].(string))
-	}
 
 	selfServiceMethodsOidc := &IdentitySelfServiceMethodsOidcType{
 		Config: &IdentitySelfServiceMethodsOidcConfigType{
@@ -793,7 +773,6 @@ func NewProjectIdentityFromApiRepresentation(apiIdentity *ory.ProjectServiceIden
 
 	selfService := IdentitySelfServiceType{
 		DefaultBrowserReturnUrl: types.StringValue(rawSelfService["default_browser_return_url"].(string)),
-		AllowedReturnUrls:       selfServiceAllowedReturnUrls,
 		// TODO: Implement these
 		Methods: &selfServiceMethods,
 		Flows:   &IdentitySelfServiceFlowsType{},
@@ -873,10 +852,9 @@ func (config *IdentitySelfServiceMethodsCodeConfigType) TerraformType() attr.Typ
 func (code *IdentitySelfServiceMethodsCodeType) TerraformType() attr.Type {
 	return types.ObjectType{
 		AttrTypes: map[string]attr.Type{
-			"passwordless_login_fallback_enabled": types.BoolType,
-			"enabled":                             types.BoolType,
-			"passwordless_enabled":                types.BoolType,
-			"config":                              (&IdentitySelfServiceMethodsCodeConfigType{}).TerraformType(),
+			"enabled":              types.BoolType,
+			"passwordless_enabled": types.BoolType,
+			"config":               (&IdentitySelfServiceMethodsCodeConfigType{}).TerraformType(),
 		},
 	}
 }
@@ -889,7 +867,6 @@ func (config *IdentitySelfServiceMethodsPasswordConfigType) TerraformType() attr
 			"ignore_network_errors":               types.BoolType,
 			"min_password_length":                 types.Int64Type,
 			"identifier_similarity_check_enabled": types.BoolType,
-			"haveibeenpwned_host":                 types.StringType,
 		},
 	}
 }
@@ -941,7 +918,6 @@ func (rp *IdentitySelfServiceMethodsWebAuthNConfigRpType) TerraformType() attr.T
 		AttrTypes: map[string]attr.Type{
 			"id":           types.StringType,
 			"display_name": types.StringType,
-			"icon":         types.StringType,
 		},
 	}
 }
@@ -1129,7 +1105,6 @@ func (selfService *IdentitySelfServiceType) TerraformType() attr.Type {
 	return types.ObjectType{
 		AttrTypes: map[string]attr.Type{
 			"default_browser_return_url": types.StringType,
-			"allowed_return_urls":        types.ListType{ElemType: types.StringType},
 			"methods":                    (&IdentitySelfServiceMethodsType{}).TerraformType(),
 			"flows":                      (&IdentitySelfServiceFlowsType{}).TerraformType(),
 		},

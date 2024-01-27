@@ -1,23 +1,5 @@
-terraform {
-  required_providers {
-    orynetwork = {
-      source = "hashicorp.com/karakter98/ory-network"
-    }
-  }
-}
-
-provider "orynetwork" {}
-
-resource "orynetwork_project" "project" {
-  name = "Test Project"
-  cors_admin = {
-    enabled = true
-    origins = ["https://google.com"]
-  }
-  cors_public = {
-    enabled = true
-    origins = ["https://google.com"]
-  }
+resource "orynetwork_project" "test_identity" {
+  name = "DeleteMe"
   services = {
     identity = {
       config = {
@@ -36,7 +18,7 @@ resource "orynetwork_project" "project" {
             link = {
               enabled = true
               config = {
-                lifespan = "15m05"
+                lifespan = "15m0s"
                 base_url = "https://google.com"
               }
             }
@@ -50,10 +32,10 @@ resource "orynetwork_project" "project" {
             password = {
               enabled = true
               config = {
-                haveibeenpwned_enabled              = true
-                max_breaches                        = 1
-                ignore_network_errors               = true
-                min_password_length                 = 8
+                haveibeenpwned_enabled = true
+                max_breaches = 1
+                ignore_network_errors = true
+                min_password_length = 8
                 identifier_similarity_check_enabled = true
               }
             }
@@ -74,7 +56,7 @@ resource "orynetwork_project" "project" {
               config = {
                 passwordless = true
                 rp = {
-                  id           = "Test"
+                  id = "Test"
                   display_name = "Test"
                 }
               }
@@ -84,26 +66,12 @@ resource "orynetwork_project" "project" {
               config = {
                 base_redirect_uri = "https://google.com"
                 providers = [{
-                  id                   = "Test"
-                  provider             = "google"
-                  client_id            = "Test"
-                  mapper_url           = "https://google.com"
-                  client_secret        = "Test"
-                  issuer_url           = "https://google.com"
-                  auth_url             = "https://google.com"
-                  token_url            = "https://google.com"
-                  scope                = ["profile"]
-                  microsoft_tenant     = "Test"
-                  subject_source       = "Test"
-                  apple_team_id        = "Test"
-                  apple_private_key_id = "Test"
-                  apple_private_key    = "Test"
-                  requested_claims = {
-                    id_token : ["profile"]
-                  }
-                  organization_id               = "Test"
-                  label                         = "Test"
-                  additional_id_token_audiences = ["Test"]
+                  id = "Test"
+                  provider = "google"
+                  client_id = "Test"
+                  client_secret = "Test"
+                  mapper_url = "https://storage.googleapis.com/bac-gcs-production/365a484e56a5caad3c2524c80cc2df4b4fa1f21ba9ae8ac654c9d6f666d912858ff619c2e4ac9fcb7f5786d3e6a44747c9d881c3b7ad9eabe722798887238ace.jsonnet"
+                  scope = ["email"]
                 }]
               }
             }
