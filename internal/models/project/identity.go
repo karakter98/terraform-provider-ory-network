@@ -260,7 +260,7 @@ func (code *IdentitySelfServiceMethodsCodeType) MarshalJSON() ([]byte, error) {
 	return marshalWithoutNulls(map[string]interface{}{
 		"passwordless_login_fallback_enabled": code.PasswordlessLoginFallbackEnabled.ValueBool(),
 		"enabled":                             code.Enabled.ValueBool(),
-		"passwordless_enabled":                code.Enabled.ValueBool(),
+		"passwordless_enabled":                code.PasswordlessEnabled.ValueBool(),
 		"config":                              code.Config,
 	})
 }
@@ -695,6 +695,8 @@ func NewProjectIdentityFromApiRepresentation(apiIdentity *ory.ProjectServiceIden
 	}
 	if rawSelfServiceMethodsCode["passwordless_login_fallback_enabled"] != nil {
 		selfServiceMethodsCode.PasswordlessLoginFallbackEnabled = types.BoolValue(rawSelfServiceMethodsCode["passwordless_login_fallback_enabled"].(bool))
+	} else {
+		selfServiceMethodsCode.PasswordlessLoginFallbackEnabled = types.BoolValue(false)
 	}
 	if rawSelfServiceMethodsCode["enabled"] != nil {
 		selfServiceMethodsCode.Enabled = types.BoolValue(rawSelfServiceMethodsCode["enabled"].(bool))
@@ -800,7 +802,7 @@ func NewProjectIdentityFromApiRepresentation(apiIdentity *ory.ProjectServiceIden
 		AllowedReturnUrls:       selfServiceAllowedReturnUrls,
 		// TODO: Implement these
 		Methods: &selfServiceMethods,
-		Flows:   nil,
+		Flows:   &IdentitySelfServiceFlowsType{},
 	}
 
 	return &IdentityType{

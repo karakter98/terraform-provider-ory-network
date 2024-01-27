@@ -12,7 +12,7 @@ resource "orynetwork_project" "project" {
   name = "Test Project"
   services = {
     identity = {
-      config = jsonencode({
+      config = {
         identity = {
           default_schema_id = "preset://username"
           schemas = [
@@ -37,7 +37,7 @@ resource "orynetwork_project" "project" {
             }
           }
         }
-      })
+      }
     }
   }
 }
