@@ -44,24 +44,6 @@ func (services *ServicesType) ToTerraformRepresentation(ctx *context.Context) ba
 	return servicesRepresentation
 }
 
-func (services *ServicesType) ToApiRepresentation() (*ory.ProjectServices, error) {
-	oryServices := ory.NewProjectServices()
-
-	oryPermission, err := services.Permission.ToApiRepresentation()
-	if err != nil {
-		return nil, err
-	}
-
-	oryIdentity, err := services.Identity.ToApiRepresentation()
-	if err != nil {
-		return nil, err
-	}
-
-	oryServices.SetPermission(*oryPermission)
-	oryServices.SetIdentity(*oryIdentity)
-	return oryServices, nil
-}
-
 func (services *ServicesType) MergeWith(other *ServicesType) {
 	if services.Permission == nil {
 		services.Permission = other.Permission

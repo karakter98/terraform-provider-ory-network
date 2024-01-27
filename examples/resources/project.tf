@@ -10,6 +10,14 @@ provider "orynetwork" {}
 
 resource "orynetwork_project" "project" {
   name = "Test Project"
+  cors_admin = {
+    enabled = true
+    origins = ["https://google.com"]
+  }
+  cors_public = {
+    enabled = true
+    origins = ["https://google.com"]
+  }
   services = {
     identity = {
       config = {

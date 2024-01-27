@@ -6,11 +6,14 @@ package provider
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -45,11 +48,13 @@ func (r *ProjectResourceProps) Schema(ctx context.Context, req resource.SchemaRe
 			"enabled": schema.BoolAttribute{
 				Optional: true,
 				Computed: true,
+				Default:  booldefault.StaticBool(false),
 			},
 			"origins": schema.ListAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
 				Computed:    true,
+				Default:     listdefault.StaticValue(types.ListValueMust(types.StringType, make([]attr.Value, 0))),
 			},
 		},
 		Optional: true,

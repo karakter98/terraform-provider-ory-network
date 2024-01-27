@@ -387,16 +387,10 @@ func (provider *IdentitySelfServiceMethodsOidcConfigProviderType) MarshalJSON() 
 
 // MarshalJSON For json.Marshal compatibility.
 func (config *IdentitySelfServiceMethodsOidcConfigType) MarshalJSON() ([]byte, error) {
-	jsonObj := map[string]interface{}{
+	return marshalWithoutNulls(map[string]interface{}{
 		"base_redirect_uri": config.BaseRedirectUri.ValueStringPointer(),
 		"providers":         config.Providers,
-	}
-	for k, v := range jsonObj {
-		if v == nil {
-			delete(jsonObj, k)
-		}
-	}
-	return marshalWithoutNulls(jsonObj)
+	})
 }
 
 // MarshalJSON For json.Marshal compatibility.
