@@ -17,7 +17,14 @@ func TestAccProjectDataSource(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Read testing
 			{
-				Config: testAccProjectDataSourceConfig,
+				Config: `
+					variable "TEST_ORY_NETWORK_PROJECT_ID" {
+					  type = string
+					}
+					data "orynetwork_project" "test" {
+					  id = var.TEST_ORY_NETWORK_PROJECT_ID
+					}
+				`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.orynetwork_project.test", "id", os.Getenv("TF_VAR_TEST_ORY_NETWORK_PROJECT_ID")),
 					resource.TestCheckResourceAttr("data.orynetwork_project.test", "name", "Test"),
@@ -30,12 +37,3 @@ func TestAccProjectDataSource(t *testing.T) {
 		},
 	})
 }
-
-const testAccProjectDataSourceConfig = `
-variable "TEST_ORY_NETWORK_PROJECT_ID" {
-  type = string
-}
-data "orynetwork_project" "test" {
-  id = var.TEST_ORY_NETWORK_PROJECT_ID
-}
-`

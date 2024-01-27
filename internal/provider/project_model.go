@@ -32,7 +32,7 @@ func (data *ProjectModel) Deserialize(project *ory.Project, overwrite bool) erro
 
 	data.DeserializeCorsSettings(project, overwrite)
 
-	return data.DeserializeServicesConfig(project, overwrite)
+	return data.DeserializeServicesConfig(project)
 }
 
 func (data *ProjectModel) DeserializeComputedAttributes(project *ory.Project) {
@@ -82,7 +82,7 @@ func (data *ProjectModel) DeserializeCorsSettings(project *ory.Project, overwrit
 	}
 }
 
-func (data *ProjectModel) DeserializeServicesConfig(project *ory.Project, overwrite bool) error {
+func (data *ProjectModel) DeserializeServicesConfig(project *ory.Project) error {
 	identityConfig, err := json.Marshal(project.Services.Identity.Config)
 	if err != nil {
 		return err
@@ -97,21 +97,21 @@ func (data *ProjectModel) DeserializeServicesConfig(project *ory.Project, overwr
 	}
 
 	identityAttr := data.Services.Attributes()["identity"]
-	if identityAttr != nil && !overwrite {
+	if identityAttr != nil {
 		identityConfigAttr := identityAttr.(basetypes.ObjectValue).Attributes()["config"]
 		if identityConfigAttr != nil {
 			identityConfig = []byte(identityConfigAttr.(jsontypes.Normalized).ValueString())
 		}
 	}
 	oauth2Attr := data.Services.Attributes()["oauth2"]
-	if oauth2Attr != nil && !overwrite {
+	if oauth2Attr != nil {
 		oauth2ConfigAttr := oauth2Attr.(basetypes.ObjectValue).Attributes()["config"]
 		if oauth2ConfigAttr != nil {
 			oauth2Config = []byte(oauth2ConfigAttr.(jsontypes.Normalized).ValueString())
 		}
 	}
 	permissionAttr := data.Services.Attributes()["permission"]
-	if permissionAttr != nil && !overwrite {
+	if permissionAttr != nil {
 		permissionConfigAttr := permissionAttr.(basetypes.ObjectValue).Attributes()["config"]
 		if permissionConfigAttr != nil {
 			permissionConfig = []byte(permissionConfigAttr.(jsontypes.Normalized).ValueString())
