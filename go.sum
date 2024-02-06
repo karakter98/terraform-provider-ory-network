@@ -148,8 +148,8 @@ github.com/mitchellh/reflectwalk v1.0.2 h1:G2LzWKi524PWgd3mLHV8Y5k7s6XUvT0Gef6zx
 github.com/mitchellh/reflectwalk v1.0.2/go.mod h1:mSTlrgnPZtwu0c4WaC2kGObEpuNDbx0jmZXqmk4esnw=
 github.com/oklog/run v1.0.0 h1:Ru7dDtJNOyC66gQ5dQmaCa0qIsAUFY3sFpK1Xk8igrw=
 github.com/oklog/run v1.0.0/go.mod h1:dlhp/R75TPv97u0XWUtDeV/lRKWPKSdTuV0TZvrmrQA=
-github.com/ory/client-go v1.5.1 h1:lVi1f8j994uXMbi2+YahdtJw4+WZEalDXiRJbSQBYhU=
-github.com/ory/client-go v1.5.1/go.mod h1:6dx0Ir6q8O9mUvl3sqrlyR+0LalXLwwKedVDDmSPNQs=
+github.com/ory/client-go v1.6.1 h1:nVb1ZRtBQS9oLJQR7VK7t9cxNHXKdZ2CtpoDmmHOhAQ=
+github.com/ory/client-go v1.6.1/go.mod h1:6dx0Ir6q8O9mUvl3sqrlyR+0LalXLwwKedVDDmSPNQs=
 github.com/pjbgf/sha1cd v0.3.0 h1:4D5XXmUUBUl/xQ6IjCkEAbqXskkq/4O7LmGn0AqMDs4=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
